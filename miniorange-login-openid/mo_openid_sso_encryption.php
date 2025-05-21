@@ -2,7 +2,7 @@
 /**
  * @package    miniOrange
  * @author	   miniOrange Security Software Pvt. Ltd.
- * @license    GNU/GPLv3
+ * @license    Expat
  * @copyright  Copyright 2015 miniOrange. All Rights Reserved.
  *
  *

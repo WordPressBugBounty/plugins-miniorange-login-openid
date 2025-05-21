@@ -45,6 +45,7 @@ class mo_google {
 		$client_id                = $appslist['google']['clientid'];
 		$client_secret            = $appslist['google']['clientsecret'];
 		$access_token_uri         = 'https://accounts.google.com/o/oauth2/token';
+		
 		$postData                 = 'code=' . $code . '&client_id=' . $client_id . '&client_secret=' . $client_secret . '&redirect_uri=' . $social_app_redirect_uri . '&grant_type=authorization_code';
 		$access_token_json_output = mo_openid_get_access_token( $postData, $access_token_uri, 'google' );
 		$access_token             = isset( $access_token_json_output['access_token'] ) ? $access_token_json_output['access_token'] : '';

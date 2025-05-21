@@ -90,7 +90,7 @@ function get_social_app_redirect_uri( $appname ) {
 }
 function mo_openid_get_access_token( $postData, $access_token_uri, $appname ) {
 	$headers = '';
-	if ( $appname == 'google' || $appname == 'spotify' || $appname == 'apple' ) {
+	if ( $appname == 'spotify' || $appname == 'apple' ) {
 		$headers = array( 'Content-Type' => 'application/x-www-form-urlencoded' );
 	}
 	$args   = array(

@@ -32,8 +32,9 @@ class mo_discord {
 		$appslist         = maybe_unserialize( get_option( 'mo_openid_apps_list' ) );
 		$client_id        = $appslist['discord']['clientid'];
 		$client_secret    = $appslist['discord']['clientsecret'];
+		$scope               = $appslist['discord']['scope'];
 		$access_token_uri = 'https://discordapp.com/api/oauth2/token';
-		$postData         = 'client_id=' . $client_id . '&grant_type=authorization_code&code=' . $code . '&redirect_uri=' . $social_app_redirect_uri . '&scope=identify&client_secret=' . $client_secret;
+		$postData         = 'client_id=' . $client_id . '&grant_type=authorization_code&code=' . $code . '&redirect_uri=' . $social_app_redirect_uri . '&scope=' . $scope . '&client_secret=' . $client_secret;
 
 		$access_token_json_output = mo_openid_get_access_token( $postData, $access_token_uri, 'discord' );
 

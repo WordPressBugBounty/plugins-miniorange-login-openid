@@ -31,11 +31,16 @@ class mo_linkedin_oidc {
 		$appslist         = maybe_unserialize( get_option( 'mo_openid_apps_list' ) );
 		$client_id        = $appslist['linkedin_oidc']['clientid'];
 		$client_secret    = $appslist['linkedin_oidc']['clientsecret'];
-		$access_token_uri = 'https://www.linkedin.com/oauth/v2/accessToken';
-		$postData         = 'grant_type=authorization_code&code=' . $code . '&redirect_uri=' . $social_app_redirect_uri . '&client_id=' . $client_id . '&client_secret=' . $client_secret;
-
+		$access_token_uri = 'https://www.linkedin.com/oauth/v2/accessToken?grant_type=authorization_code&code=' . $code . '&redirect_uri=' . $social_app_redirect_uri . '&client_id=' . $client_id . '&client_secret=' . $client_secret;
+		$postData = json_encode([
+			'grant_type' => 'authorization_code',
+			'code' => $code,
+			'redirect_uri' => $social_app_redirect_uri,
+			'client_id' => $client_id,
+			'client_secret' => $client_secret,
+		]);
+		
 		$access_token_json_output = mo_openid_get_access_token( $postData, $access_token_uri, 'linkedin_oidc' );
-
 		$access_token = isset( $access_token_json_output['access_token'] ) ? $access_token_json_output['access_token'] : '';
 		mo_openid_start_session();
 
