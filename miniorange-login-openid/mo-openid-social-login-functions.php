@@ -36,7 +36,76 @@ function mo_openid_initialize_social_login() {
 	exit;
 }
 
+// Whitelist of allowed social apps
+function mo_openid_get_allowed_social_apps() {
+    return array(
+        'amazon',
+        'apple',
+        'baidu',
+        'discord',
+        'dribbble',
+        'disqus',
+        'dropbox',
+        'facebook',
+        'flickr',
+        'fitbit',
+        'foursquare',
+        'github',
+        'gitlab',
+        'google',
+        'hubspot',
+        'instagram',
+        'kakao',
+        'line',
+        'linkedin',
+        'linkedin_oidc',
+        'livejournal',
+        'mailchimp',
+        'mailru',
+        'meetup',
+        'naver',
+        'odnoklassniki',
+        'paypal',
+        'pinterest',
+        'qq',
+        'reddit',
+        'renren',
+        'salesforce',
+        'slack',
+        'snapchat',
+        'spotify',
+        'stackexchange',
+        'stackoverflow',
+        'steam',
+        'strava',
+        'teamsnap',
+        'trello',
+        'tumblr',
+        'twitch',
+        'twitter',
+        'vimeo',
+        'vkontakte',
+        'wechat',
+        'wiebo',
+        'windowslive',
+        'wordpress',
+        'yahoo',
+        'yandex',
+        'youtube',
+        'zoom'
+    );
+}
+
+function mo_openid_validate_social_app($appname) {
+    $allowed_apps = mo_openid_get_allowed_social_apps();
+    return in_array(strtolower($appname), $allowed_apps);
+}
+
 function mo_openid_custom_app_oauth_redirect( $appname ) {
+	if (!mo_openid_validate_social_app($appname)) {
+		wp_die('Invalid social app specified.');
+	}
+	
 	if ( isset( $_REQUEST['test'] ) ) { 	// phpcs:ignore
 		setcookie( 'mo_oauth_test', true );
 	} else {
@@ -90,6 +159,12 @@ function mo_openid_process_custom_app_callback() {
 	if ( $appname == 'yaahoo' ) {
 		$appname = 'yahoo';
 	}
+
+	// Validate the appname against whitelist
+	if (!mo_openid_validate_social_app($appname)) {
+		wp_die('Invalid social app specified.');
+	}
+
 	require 'social_apps/' . $appname . '.php';
 	$mo_appname     = 'mo_' . $appname;
 	$social_app     = new $mo_appname();
