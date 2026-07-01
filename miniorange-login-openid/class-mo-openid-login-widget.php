@@ -1319,8 +1319,18 @@ function mo_openid_login_validate() {
 		if ( ! wp_verify_nonce( $nonce, 'mo-openid-profile-form-submitted-nonce' ) ) {
 			wp_die( '<strong>ERROR WPSL03</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 		} else {
+			mo_openid_start_session();
+			if ( empty( $_SESSION['appname'] ) ) {
+				wp_die( esc_html__( 'Invalid request. Please initiate login from the social login button.', 'miniorange-login-openid' ) );
+			}
+			$oauth_email = isset( $_SESSION['user_email'] ) ? sanitize_email( $_SESSION['user_email'] ) : '';
+			$user_email  = sanitize_email( $_POST['email_field'] );
+			// If OAuth provided an email, the submitted email must match it exactly.
+			// This prevents an attacker from substituting any target email in the profile form.
+			if ( ! empty( $oauth_email ) && ! hash_equals( $oauth_email, $user_email ) ) {
+				wp_die( '<strong>ERROR</strong>: The email you submitted does not match your social account.' );
+			}
 			$username           = sanitize_text_field( $_POST['username_field'] );
-			$user_email         = sanitize_email( $_POST['email_field'] );
 			$user_picture       = sanitize_text_field( $_POST['user_picture'] );
 			$user_url           = sanitize_text_field( $_POST['user_url'] );
 			$last_name          = sanitize_text_field( $_POST['last_name'] );
@@ -1426,9 +1436,16 @@ function mo_openid_login_validate() {
 		if ( ! wp_verify_nonce( $nonce, 'mo-openid-user-otp-validation-nonce' ) ) {
 			wp_die( '<strong>ERROR WPSL09</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 		} else {
+			mo_openid_start_session();
+			if ( empty( $_SESSION['appname'] ) ) {
+				wp_die( esc_html__( 'Invalid request. Please initiate login from the social login button.', 'miniorange-login-openid' ) );
+			}
 			$username           = sanitize_text_field( $_POST['username_field'] );
 			$user_email         = sanitize_email( $_POST['email_field'] );
-			$transaction_id     = sanitize_text_field( $_POST['transaction_id'] );
+			$oauth_email        = isset( $_SESSION['user_email'] ) ? sanitize_email( $_SESSION['user_email'] ) : '';
+			if ( ! empty( $oauth_email ) && ! hash_equals( $oauth_email, $user_email ) ) {
+				wp_die( '<strong>ERROR</strong>: The email you submitted does not match your social account.' );
+			}
 			$otp_token          = sanitize_text_field( $_POST['otp_field'] );
 			$user_picture       = sanitize_text_field( $_POST['user_picture'] );
 			$user_url           = sanitize_text_field( $_POST['user_url'] );
@@ -1443,7 +1460,6 @@ function mo_openid_login_validate() {
 					$message = 'Error Code 3: ' . get_option( 'mo_email_failure_message' );
 					wp_die( esc_attr( $message ) );
 				}
-				$transaction_id = $send_content['tId'];
 				$allowed_html   = array(
 					'style' => array(),
 					'head'  => array(),
@@ -1484,11 +1500,11 @@ function mo_openid_login_validate() {
 						'value' => array(),
 					),
 				);
-				echo wp_kses( mo_openid_validate_otp_form( $username, $user_email, $transaction_id, $user_picture, $user_url, $last_name, $user_full_name, $first_name, $decrypted_app_name, $decrypted_user_id ), $allowed_html );
+				echo wp_kses( mo_openid_validate_otp_form( $username, $user_email, $user_picture, $user_url, $last_name, $user_full_name, $first_name, $decrypted_app_name, $decrypted_user_id ), $allowed_html );
 
 				exit;
 			}
-			mo_openid_social_login_validate_otp( $username, $user_email, $first_name, $last_name, $user_full_name, $user_url, $user_picture, $decrypted_app_name, $decrypted_user_id, $otp_token, $transaction_id );
+			mo_openid_social_login_validate_otp( $username, $user_email, $first_name, $last_name, $user_full_name, $user_url, $user_picture, $decrypted_app_name, $decrypted_user_id, $otp_token );
 		}
 	} elseif ( isset( $_POST['mo_openid_connect_verify_nonce'] ) and isset( $_POST['option'] ) and sanitize_text_field( $_POST['option'] ) == 'mo_openid_connect_verify_customer' ) {    // register the admin to miniOrange
 		$nonce = sanitize_text_field( $_POST['mo_openid_connect_verify_nonce'] );

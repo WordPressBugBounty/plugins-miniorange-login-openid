@@ -36,7 +36,14 @@ function mo_openid_initialize_social_login() {
 	exit;
 }
 
-// Whitelist of allowed social apps
+/**
+ * Returns the whitelist of supported social app identifiers.
+ *
+ * Used to validate app names before loading app-specific files or redirecting
+ * to prevent path traversal and unauthorized app inclusion.
+ *
+ * @return string[] Lowercase social app slugs accepted by this plugin.
+ */
 function mo_openid_get_allowed_social_apps() {
     return array(
         'amazon',
@@ -96,14 +103,20 @@ function mo_openid_get_allowed_social_apps() {
     );
 }
 
+/**
+ * Validates whether a social app name is in the allowed whitelist.
+ *
+ * @param string $appname The social app identifier to validate.
+ * @return bool True if the app name is allowed, false otherwise.
+ */
 function mo_openid_validate_social_app($appname) {
     $allowed_apps = mo_openid_get_allowed_social_apps();
     return in_array(strtolower($appname), $allowed_apps);
 }
 
 function mo_openid_custom_app_oauth_redirect( $appname ) {
-	if (!mo_openid_validate_social_app($appname)) {
-		wp_die('Invalid social app specified.');
+	if ( ! mo_openid_validate_social_app( $appname ) ) {
+		wp_die( esc_html__( 'Invalid social app specified.', 'miniorange-login-openid' ) );
 	}
 	
 	if ( isset( $_REQUEST['test'] ) ) { 	// phpcs:ignore
@@ -117,6 +130,8 @@ function mo_openid_custom_app_oauth_redirect( $appname ) {
 	require 'social_apps/' . $appname . '.php';
 	$mo_appname = 'mo_' . $appname;
 	$social_app = new $mo_appname();
+	mo_openid_start_session();
+	$_SESSION['mo_openid_state'] = wp_generate_password( 32, false, false );
 	$social_app->mo_openid_get_app_code();
 }
 
@@ -129,6 +144,15 @@ function mo_openid_process_custom_app_callback() {
 	$code               = $profile_url = $client_id = $current_url = $client_secret = $access_token_uri = $postData = $oauth_token = $user_url = $user_name = $email = '';
 	$oauth_access_token = $redirect_url = $option = $oauth_token_secret = $screen_name = $profile_json_output = $oauth_verifier = $twitter_oauth_token = $access_token_json_output = array();
 	mo_openid_start_session();
+
+	// Reject callbacks that were not initiated by a legitimate OAuth redirect from this site.
+	// mo_openid_state is set exclusively in mo_openid_custom_app_oauth_redirect() when the user
+	// clicks a social login button, so a fresh attacker-crafted session will always be missing it.
+	if ( empty( $_SESSION['mo_openid_state'] ) ) {
+		wp_die( 'Invalid OAuth session. Please initiate login from the social login button.' );
+	}
+	unset( $_SESSION['mo_openid_state'] );
+
 	if ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'oauth_verifier' ) !== false ) {
 		$_SESSION['appname'] = 'twitter';
 	}
@@ -161,8 +185,8 @@ function mo_openid_process_custom_app_callback() {
 	}
 
 	// Validate the appname against whitelist
-	if (!mo_openid_validate_social_app($appname)) {
-		wp_die('Invalid social app specified.');
+	if ( ! mo_openid_validate_social_app( $appname ) ) {
+		wp_die( esc_html__( 'Invalid social app specified.', 'miniorange-login-openid' ) );
 	}
 
 	require 'social_apps/' . $appname . '.php';

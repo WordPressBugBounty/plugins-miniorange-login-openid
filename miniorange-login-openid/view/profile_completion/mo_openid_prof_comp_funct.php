@@ -61,8 +61,7 @@ function mo_openid_save_profile_completion_form( $username, $user_email, $first_
 				$message = 'Error Code 1: ' . get_option( 'mo_email_failure_message' );
 				wp_die( esc_attr( $message ) );
 			}
-			$transaction_id = $send_content['tId'];
-			echo wp_kses( mo_openid_validate_otp_form( $username, $user_email, $transaction_id, $user_picture, $user_url, $last_name, $user_full_name, $first_name, $decrypted_app_name, $decrypted_user_id ), $allowed_html );
+			echo wp_kses( mo_openid_validate_otp_form( $username, $user_email, $user_picture, $user_url, $last_name, $user_full_name, $first_name, $decrypted_app_name, $decrypted_user_id ), $allowed_html );
 			exit;
 		}
 		// email doesnt exist, check if username is in db or not, acc show form and proceed further
@@ -89,15 +88,14 @@ function mo_openid_save_profile_completion_form( $username, $user_email, $first_
 					$message = 'Error Code 2: ' . get_option( 'mo_email_failure_message' );
 					wp_die( esc_attr( $message ) );
 				}
-				$transaction_id = $send_content['tId'];
-				echo wp_kses( mo_openid_validate_otp_form( $username, $user_email, $transaction_id, $user_picture, $user_url, $last_name, $user_full_name, $first_name, $decrypted_app_name, $decrypted_user_id ), $allowed_html );
+				echo wp_kses( mo_openid_validate_otp_form( $username, $user_email, $user_picture, $user_url, $last_name, $user_full_name, $first_name, $decrypted_app_name, $decrypted_user_id ), $allowed_html );
 				exit;
 			}
 		}
 	}
 }
 
-function mo_openid_validate_otp_form( $username, $user_email, $transaction_id, $user_picture, $user_url, $last_name, $user_full_name, $first_name, $decrypted_app_name, $decrypted_user_id, $message = '' ) {
+function mo_openid_validate_otp_form( $username, $user_email, $user_picture, $user_url, $last_name, $user_full_name, $first_name, $decrypted_app_name, $decrypted_user_id, $message = '' ) {
 	$path  = mo_openid_get_wp_style();
 	$nonce = wp_create_nonce( 'mo-openid-user-otp-validation-nonce' );
 	if ( $message == '' ) {
@@ -137,15 +135,14 @@ function mo_openid_validate_otp_form( $username, $user_email, $transaction_id, $
                         <input type="text" pattern="\d{4,5}" class="input" name="otp_field" value=""  size="50" /></label>
                         </p>
                         <input type="hidden" name="username_field" value=' . esc_attr( $username ) . '>
-                        <input type="hidden" name="email_field" value=' . esc_attr( $user_email ) . '>						
+                        <input type="hidden" name="email_field" value=' . esc_attr( $user_email ) . '>
                         <input type="hidden" name="first_name" value=' . esc_attr( $first_name ) . '>
                         <input type="hidden" name="last_name" value=' . esc_attr( $last_name ) . '>
                         <input type="hidden" name="user_full_name" value=' . esc_attr( $user_full_name ) . '>
                         <input type="hidden" name="user_url" value=' . esc_url( $user_url ) . '>
                         <input type="hidden" name="user_picture" value=' . esc_url( $user_picture ) . '>
-                        <input type="hidden" name="transaction_id" value=' . esc_attr( $transaction_id ) . '>
                         <input type="hidden" name="decrypted_app_name" value=' . esc_attr( $decrypted_app_name ) . '>
-                        <input type="hidden" name="decrypted_user_id" value=' . esc_attr( $decrypted_user_id ) . '>				
+                        <input type="hidden" name="decrypted_user_id" value=' . esc_attr( $decrypted_user_id ) . '>
                         <input type="hidden" name="option" value="mo_openid_otp_validation">
                         <input type="hidden" name="mo_openid_user_otp_validation_nonce" value="' . $nonce . '"/>
                         </div>
@@ -167,13 +164,12 @@ function mo_openid_validate_otp_form( $username, $user_email, $transaction_id, $
                     <input hidden name="option" value="mo_openid_show_profile_form"/>
                     <input type="hidden" name="mo_openid_show_profile_form_nonce" value="' . $nonce . '"/>
                     <input type="hidden" name="username_field" value=' . esc_attr( $username ) . '>
-                    <input type="hidden" name="email_field" value=' . esc_attr( $user_email ) . '>						
+                    <input type="hidden" name="email_field" value=' . esc_attr( $user_email ) . '>
                     <input type="hidden" name="first_name" value=' . esc_attr( $first_name ) . '>
                     <input type="hidden" name="last_name" value=' . esc_attr( $last_name ) . '>
                     <input type="hidden" name="user_full_name" value=' . esc_attr( $user_full_name ) . '>
                     <input type="hidden" name="user_url" value=' . esc_url( $user_url ) . '>
                     <input type="hidden" name="user_picture" value=' . esc_url( $user_picture ) . '>
-                    <input type="hidden" name="transaction_id" value=' . esc_attr( $transaction_id ) . '>
                     <input type="hidden" name="decrypted_app_name" value=' . esc_attr( $decrypted_app_name ) . '>
                     <input type="hidden" name="decrypted_user_id" value=' . esc_attr( $decrypted_user_id ) . '>
                     </form>
@@ -189,53 +185,66 @@ function mo_openid_validate_otp_form( $username, $user_email, $transaction_id, $
 }
 
 function send_otp_token( $email ) {
-	$otp           = wp_rand( 1000, 99999 );
-	$customerKey   = get_option( 'mo_openid_admin_customer_key' );
-	$stringToHash  = $customerKey . $otp;
-	$transactionId = hash( 'sha512', $stringToHash );
-	// wp_email function will come here
+	// 6-digit OTP gives 900,000 possibilities � stored server-side only, never sent to client.
+	$otp     = wp_rand( 100000, 999999 );
 	$subject = '[' . get_bloginfo( 'name' ) . '] Verify your email';
-
 	$message = str_replace( '##otp##', $otp, get_option( 'custom_otp_msg' ) );
 
 	$response = wp_mail( $email, $subject, $message );
 
 	if ( $response ) {
 		mo_openid_start_session();
-		$_SESSION['mo_otptoken'] = true;
-		$_SESSION['sent_on']     = time();
-		$content                 = array(
-			'status' => 'SUCCESS',
-			'tId'    => $transactionId,
-		);
+		$_SESSION['mo_otptoken']         = true;
+		$_SESSION['mo_openid_otp_value'] = (string) $otp;
+		$_SESSION['mo_otp_email']        = sanitize_email( $email );
+		$_SESSION['sent_on']             = current_time( 'timestamp' );
+		$_SESSION['mo_otp_attempts']     = 0;
+		$content = array( 'status' => 'SUCCESS' );
 	} else {
 		$content = array( 'status' => 'FAILURE' );
 	}
 	return $content;
 }
 
-function validate_otp_token( $transactionId, $otpToken ) {
+function validate_otp_token( $otpToken, $email ) {
 	mo_openid_start_session();
-	$customerKey = get_option( 'mo_openid_admin_customer_key' );
-	if ( $_SESSION['mo_otptoken'] ) {
-		$pass = checkTimeStamp( ( $_SESSION['sent_on'] ), time() );
-		$pass = checkTransactionId( $customerKey, $otpToken, $transactionId, $pass );
-		if ( $pass ) {
-			$content = array( 'status' => 'SUCCESS' );
-		} else {
-			$content = array( 'status' => 'FAILURE' );
-		}
-		unset( $_SESSION['$mo_otptoken'] );
-	} else {
-		$content = array( 'status' => 'FAILURE' );
+
+	if ( empty( $_SESSION['mo_otptoken'] ) || ! isset( $_SESSION['mo_openid_otp_value'] ) || ! isset( $_SESSION['mo_otp_email'] ) ) {
+		return array( 'status' => 'FAILURE' );
 	}
 
-	return $content;
+	// Rate-limit: block after 5 failed attempts to prevent brute-force.
+	if ( ! isset( $_SESSION['mo_otp_attempts'] ) ) {
+		$_SESSION['mo_otp_attempts'] = 0;
+	}
+	if ( $_SESSION['mo_otp_attempts'] >= 5 ) {
+		unset( $_SESSION['mo_otptoken'], $_SESSION['mo_openid_otp_value'], $_SESSION['mo_otp_email'], $_SESSION['mo_otp_attempts'], $_SESSION['sent_on'] );
+		return array( 'status' => 'FAILURE' );
+	}
+
+	// Expiry check first: wipe state and return immediately so stale tokens cannot
+	// be submitted, and the attempt counter does not carry over to a fresh OTP.
+	if ( ! checkTimeStamp( $_SESSION['sent_on'], current_time( 'timestamp' ) ) ) {
+		unset( $_SESSION['mo_otptoken'], $_SESSION['mo_openid_otp_value'], $_SESSION['mo_otp_email'], $_SESSION['mo_otp_attempts'], $_SESSION['sent_on'] );
+		return array( 'status' => 'FAILURE' );
+	}
+
+	$email_ok = hash_equals( $_SESSION['mo_otp_email'], sanitize_email( $email ) );
+	// Use hash_equals for constant-time comparison; OTP is server-side only.
+	$otp_ok   = $email_ok && hash_equals( $_SESSION['mo_openid_otp_value'], (string) $otpToken );
+
+	if ( $otp_ok ) {
+		unset( $_SESSION['mo_otptoken'], $_SESSION['mo_openid_otp_value'], $_SESSION['mo_otp_email'], $_SESSION['mo_otp_attempts'], $_SESSION['sent_on'] );
+		return array( 'status' => 'SUCCESS' );
+	}
+
+	$_SESSION['mo_otp_attempts']++;
+	return array( 'status' => 'FAILURE' );
 }
 
-function mo_openid_social_login_validate_otp( $username, $user_email, $first_name, $last_name, $user_full_name, $user_url, $user_picture, $decrypted_app_name, $decrypted_user_id, $otp_token, $transaction_id ) {
+function mo_openid_social_login_validate_otp( $username, $user_email, $first_name, $last_name, $user_full_name, $user_url, $user_picture, $decrypted_app_name, $decrypted_user_id, $otp_token ) {
 
-	$validate_content = validate_otp_token( $transaction_id, $otp_token );
+	$validate_content = validate_otp_token( $otp_token, $user_email );
 	$status           = $validate_content['status'];
 	// if invalid OTP
 	if ( $status == 'FAILURE' ) {
@@ -282,7 +291,7 @@ function mo_openid_social_login_validate_otp( $username, $user_email, $first_nam
 			),
 		);
 
-		echo wp_kses( mo_openid_validate_otp_form( $username, $user_email, $transaction_id, $user_picture, $user_url, $last_name, $user_full_name, $first_name, $decrypted_app_name, $decrypted_user_id, $message ), $allowed_html );
+		echo wp_kses( mo_openid_validate_otp_form( $username, $user_email, $user_picture, $user_url, $last_name, $user_full_name, $first_name, $decrypted_app_name, $decrypted_user_id, $message ), $allowed_html );
 		exit;
 
 	}
