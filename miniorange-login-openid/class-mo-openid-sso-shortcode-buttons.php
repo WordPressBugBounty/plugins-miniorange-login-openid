@@ -31,7 +31,8 @@ function mo_openid_share_shortcode( $atts = '', $title = '', $excerpt = '' ) {
 	$text               = isset( $atts['heading'] ) ? esc_attr( $atts ['heading'] ) : esc_attr( get_option( 'mo_openid_share_widget_customize_text' ) );
 	$twitter_username   = get_option( 'mo_openid_share_twitter_username' );
 	$url                = isset( $atts['url'] ) ? esc_url( $atts['url'] ) : esc_url( get_site_url() );
-	$title              = esc_attr( get_the_title() );
+	$title              = ! empty( $title ) ? $title : str_replace( '+', '%20', urlencode( get_the_title() ) );
+	$excerpt            = str_replace( '+', '%20', urlencode( $excerpt ) );
 	$sharing_counts     = esc_attr( get_option( 'mo_openid_share_count' ) );
 	$email_subject      = esc_html( get_option( 'mo_openid_share_email_subject' ) );
 	$email_body         = get_option( 'mo_openid_share_email_body' );
@@ -125,7 +126,7 @@ function mo_openid_share_shortcode( $atts = '', $title = '', $excerpt = '' ) {
 					if ( get_option( 'mo_openid_' . $share_app . '_share_enable' ) ) {
 						if ( $sharing_counts ) {
 							$html .= '<li>';
-						} $html .= "<a rel='nofollow' title='Twitter' onclick='popupCenter(" . '"' . $share_link . '"' . ", 800, 500);' class='mo-openid-share-link' style='margin-left : " . ( $spaceBetweenIcons ) . "px !important'><i class='mo-custom-share-icon " . $selected_theme . ' ' . $share_icon . "' style='padding-top:8px;text-align:center;color:#ffffff;font-size:" . ( $sharingSize - 16 ) . 'px !important;background-color:#' . $custom_color . ';height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
+						} $html .= "<a rel='nofollow' title='Twitter' onclick=\"popupCenter('" . esc_js( $share_link ) . "', 800, 500);\" class='mo-openid-share-link' style='margin-left : " . ( $spaceBetweenIcons ) . "px !important'><i class='mo-custom-share-icon " . $selected_theme . ' ' . $share_icon . "' style='padding-top:8px;text-align:center;color:#ffffff;font-size:" . ( $sharingSize - 16 ) . 'px !important;background-color:#' . $custom_color . ';height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
 						if ( $sharing_counts ) {
 							$html .= "<span2 style='margin-left : " . ( $spaceBetweenIcons ) . "px !important'></span2></li>";
 						};
@@ -161,7 +162,7 @@ function mo_openid_share_shortcode( $atts = '', $title = '', $excerpt = '' ) {
 					if ( get_option( 'mo_openid_' . $share_app . '_share_enable' ) ) {
 						if ( $sharing_counts ) {
 							$html .= "<li style='line-height: 0.0px'>";
-						} $html .= "<a rel='nofollow' title='" . $share_app . "' onclick='popupCenter(" . '"' . $share_link . '"' . ", 800, 500);' class='mo-openid-share-link' style='margin-left : " . ( $spaceBetweenIcons - 6 ) . "px !important'><i class=' " . $selected_theme . ' ' . $share_icon . "' style='padding-top:4px;text-align:center;color:" . $fontColor . ';font-size:' . $sharingSize . 'px !important;height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
+						} $html .= "<a rel='nofollow' title='" . $share_app . "' onclick=\"popupCenter('" . esc_js( $share_link ) . "', 800, 500);\" class='mo-openid-share-link' style='margin-left : " . ( $spaceBetweenIcons - 6 ) . "px !important'><i class=' " . $selected_theme . ' ' . $share_icon . "' style='padding-top:4px;text-align:center;color:" . $fontColor . ';font-size:' . $sharingSize . 'px !important;height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
 						if ( $sharing_counts ) {
 							$html .= "<span2 style='margin-left : " . ( $spaceBetweenIcons ) . "px !important'></span2></li>";
 						};
@@ -199,7 +200,7 @@ function mo_openid_share_shortcode( $atts = '', $title = '', $excerpt = '' ) {
 					if ( get_option( 'mo_openid_' . $share_app . '_share_enable' ) ) {
 						if ( $sharing_counts ) {
 							$html .= '<li>';
-						} $html .= "<a rel='nofollow' title='" . $share_app . "' onclick='popupCenter(" . '"' . $share_link . '"' . ", 800, 500);' class='mo-openid-share-link' style='margin-left : " . ( $spaceBetweenIcons ) . "px !important'><i class='mo-custom-share-icon " . $selected_theme . ' ' . $share_icon . "' style='padding-top:8px;text-align:center;color:#ffffff;font-size:" . ( $sharingSize - 16 ) . 'px !important;background-color:' . $share_color . ';height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
+						} $html .= "<a rel='nofollow' title='" . $share_app . "' onclick=\"popupCenter('" . esc_js( $share_link ) . "', 800, 500);\" class='mo-openid-share-link' style='margin-left : " . ( $spaceBetweenIcons ) . "px !important'><i class='mo-custom-share-icon " . $selected_theme . ' ' . $share_icon . "' style='padding-top:8px;text-align:center;color:#ffffff;font-size:" . ( $sharingSize - 16 ) . 'px !important;background-color:' . $share_color . ';height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
 						if ( $sharing_counts ) {
 							$html .= "<span2 style='margin-left : " . ( $spaceBetweenIcons ) . "px !important'></span2></li>";
 						};
@@ -257,7 +258,10 @@ function mo_openid_vertical_share_shortcode( $atts = '', $title = '', $excerpt =
 	$twitter_username   = esc_attr( get_option( 'mo_openid_share_twitter_username' ) );
 	$url                = isset( $atts['url'] ) ? esc_url( $atts['url'] ) : esc_url( get_site_url() );
 	$email_subject      = esc_attr( get_option( 'mo_openid_share_email_subject' ) );
-	$title              = esc_attr( get_the_title() );
+	// URL-encode title for share query strings. esc_attr() alone is unsafe in
+	// inline onclick handlers: browsers decode &quot; before compiling JS.
+	$title              = ! empty( $title ) ? $title : str_replace( '+', '%20', urlencode( get_the_title() ) );
+	$excerpt            = str_replace( '+', '%20', urlencode( $excerpt ) );
 	$email_body         = get_option( 'mo_openid_share_email_body' );
 	$email_body         = str_replace( '##url##', $url, $email_body );
 
@@ -336,7 +340,7 @@ function mo_openid_vertical_share_shortcode( $atts = '', $title = '', $excerpt =
 					$share_icon = 'fas fa-print ';
 				}
 				if ( get_option( 'mo_openid_' . $share_app . '_share_enable' ) ) {
-					$html .= "<a rel='nofollow' title='" . $share_app . "' onclick='popupCenter(" . '"' . $share_link . '"' . ", 1000, 500);' class='mo-openid-share-link' style='margin-bottom : " . $spaceBetweenIcons . "px !important'><i class='mo-custom-share-icon " . $selected_theme . ' ' . $share_icon . "' style='margin-bottom : " . ( $spaceBetweenIcons - 4 ) . 'px !important;padding-top:8px;text-align:center;color:#ffffff;font-size:' . ( $sharingSize - 16 ) . 'px !important;background-color:#' . $custom_color . ';height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
+					$html .= "<a rel='nofollow' title='" . $share_app . "' onclick=\"popupCenter('" . esc_js( $share_link ) . "', 1000, 500);\" class='mo-openid-share-link' style='margin-bottom : " . $spaceBetweenIcons . "px !important'><i class='mo-custom-share-icon " . $selected_theme . ' ' . $share_icon . "' style='margin-bottom : " . ( $spaceBetweenIcons - 4 ) . 'px !important;padding-top:8px;text-align:center;color:#ffffff;font-size:' . ( $sharingSize - 16 ) . 'px !important;background-color:#' . $custom_color . ';height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
 				}
 			}
 		}
@@ -361,7 +365,7 @@ function mo_openid_vertical_share_shortcode( $atts = '', $title = '', $excerpt =
 					$share_icon = 'fas fa-print ';
 				}
 				if ( get_option( 'mo_openid_' . $share_app . '_share_enable' ) ) {
-					$html .= "<a rel='nofollow' title='" . $share_app . "' onclick='popupCenter(" . '"' . $link . '"' . ", 800, 500);' class='mo-openid-share-link' ><i class='" . $share_icon . "' style='margin-bottom : " . ( $spaceBetweenIcons - 4 ) . 'px !important;padding-top:4px;text-align:center;color:' . $fontColor . ';font-size:' . $sharingSize . 'px !important;height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
+					$html .= "<a rel='nofollow' title='" . $share_app . "' onclick=\"popupCenter('" . esc_js( $share_link ) . "', 800, 500);\" class='mo-openid-share-link' ><i class='" . $share_icon . "' style='margin-bottom : " . ( $spaceBetweenIcons - 4 ) . 'px !important;padding-top:4px;text-align:center;color:' . $fontColor . ';font-size:' . $sharingSize . 'px !important;height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
 				}
 			}
 		}
@@ -386,7 +390,7 @@ function mo_openid_vertical_share_shortcode( $atts = '', $title = '', $excerpt =
 					$share_icon = 'fas fa-print ';
 				}
 				if ( get_option( 'mo_openid_' . $share_app . '_share_enable' ) ) {
-					$html .= "<a rel='nofollow' title='Facebook' onclick='popupCenter(" . '"' . $share_link . '"' . ", 1000, 500);' class='mo-openid-share-link' style='margin-bottom : " . $spaceBetweenIcons . "px !important'><i class='mo-custom-share-icon " . $selected_theme . ' ' . $share_icon . "' style='margin-bottom : " . ( $spaceBetweenIcons - 4 ) . 'px !important;padding-top:8px;text-align:center;color:#ffffff;font-size:' . ( $sharingSize - 16 ) . 'px !important;background-color:' . $share_color . ';height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
+					$html .= "<a rel='nofollow' title='Facebook' onclick=\"popupCenter('" . esc_js( $share_link ) . "', 1000, 500);\" class='mo-openid-share-link' style='margin-bottom : " . $spaceBetweenIcons . "px !important'><i class='mo-custom-share-icon " . $selected_theme . ' ' . $share_icon . "' style='margin-bottom : " . ( $spaceBetweenIcons - 4 ) . 'px !important;padding-top:8px;text-align:center;color:#ffffff;font-size:' . ( $sharingSize - 16 ) . 'px !important;background-color:' . $share_color . ';height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
 				}
 			}
 		}

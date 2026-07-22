@@ -4,7 +4,7 @@ Donate link: https://www.miniorange.com
 Tags: social login, Facebook, Google, LinkedIn, X(Twitter)
 Requires at least: 4.1
 Tested up to: 7.0
-Stable tag: 7.8.0
+Stable tag: 7.8.1
 Requires PHP: 7.0
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
@@ -255,7 +255,7 @@ Please contact us through the support form for the social login standard and pre
 This feature is available in the Custom registration add-on which allows the users to select their role during Registration and based on that the user will be given the privileges inside.
 
 = For any other query/problem/request =
-Please email us at info@miniorange.com. You can also submit your query from the Social plugin's configuration page.
+Please email us at info@miniorange.com. You can also submit your query from the Social plugin's configuration page<a href="https://patchstack.com/database/vdp/b876ff96-44df-48d8-a6f5-bc126472b029" target="_blank">.</a>
 
 == Screenshots ==
 
@@ -277,6 +277,10 @@ Please email us at info@miniorange.com. You can also submit your query from the 
 16. Social Sharing icons without background.
 
 ==Changelog==
+
+= 7.8.1 =
+* Fixed an XSS issue
+
 = 7.8.0 =
 * Added compatibility with WP 7
 * Security fixes
@@ -1060,6 +1064,10 @@ SECURITY FIXES
 * First version of Social Login, Social Sharing plugin.
 
 == Upgrade Notice ==
+
+= 7.8.1 =
+* Fixed an XSS issue
+
 = 7.8.0 =
 * Added compatibility with WP 7
 * Security fixes
