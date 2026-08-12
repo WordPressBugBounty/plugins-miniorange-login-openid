@@ -4,7 +4,7 @@ Donate link: https://www.miniorange.com
 Tags: social login, Facebook, Google, LinkedIn, X(Twitter)
 Requires at least: 4.1
 Tested up to: 7.0
-Stable tag: 7.8.1
+Stable tag: 7.8.2
 Requires PHP: 7.0
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
@@ -277,6 +277,9 @@ Please email us at info@miniorange.com. You can also submit your query from the 
 16. Social Sharing icons without background.
 
 ==Changelog==
+
+= 7.8.2 =
+* Some security fixes
 
 = 7.8.1 =
 * Fixed an XSS issue
@@ -1064,6 +1067,9 @@ SECURITY FIXES
 * First version of Social Login, Social Sharing plugin.
 
 == Upgrade Notice ==
+
+= 7.8.2 =
+* Some security fixes
 
 = 7.8.1 =
 * Fixed an XSS issue
