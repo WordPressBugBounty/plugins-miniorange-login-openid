@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_profile() {
 	if ( ( get_option( 'mo_openid_verify_customer' ) == 'true' ) || ( trim( get_option( 'mo_openid_admin_email' ) ) != '' && trim( get_option( 'mo_openid_admin_api_key' ) ) == '' && get_option( 'mo_openid_new_registration' ) != 'true' ) ) {
 		mo_openid_show_verify_password_page();
@@ -77,7 +81,7 @@ function mo_openid_profile() {
 				</tr>
 				</tbody>
 			</table>
-			<br/><label style="cursor: auto"><a href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Click here' ) ); ?></a><?php echo esc_attr( mo_sl( ' to check our' ) ); ?> <a style="left: 1%; position: static; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a> <?php echo esc_attr( mo_sl( 'plans' ) ); ?></label>
+			<br/><label style="cursor: auto"><a href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Click here' ) ); ?></a><?php echo esc_attr( mo_sl( ' to check our' ) ); ?> <a style="left: 1%; position: static; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a> <?php echo esc_attr( mo_sl( 'plans' ) ); ?></label>
 		</div>
 		<?php
 	}

@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_openid_profile_completion() {
 	?><br>
 	<div class="mo_openid_table_layout">
@@ -13,7 +17,7 @@ function mo_openid_profile_completion() {
 						<span class="mo_openid_checkbox_checkmark"></span>
 					</label>
 					<label class="mo_openid_checkbox_container">
-						<input type="checkbox" id="mo_openid_enable_profile_completion1">Prompt user for username and email without email verification. (profile completion).<a style="left: 1%; position: static; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">PRO</a>
+						<input type="checkbox" id="mo_openid_enable_profile_completion1">Prompt user for username and email without email verification. (profile completion).<a style="left: 1%; position: static; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">PRO</a>
 						<br>For getting profile completion without Otp verification through your email,you need to enable the both the checkboxes.</br>
 						<span class="mo_openid_checkbox_checkmark_disable"></span>
 					</label>

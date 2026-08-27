@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 /**
  * @package    miniOrange
  * @author	   miniOrange Security Software Pvt. Ltd.

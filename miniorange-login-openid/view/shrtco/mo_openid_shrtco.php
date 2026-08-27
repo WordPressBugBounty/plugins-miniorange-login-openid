@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_openid_login_shortcodes() {
 	?>
 	<div class="mo_openid_table_layout">
@@ -180,9 +184,9 @@ function mo_openid_login_shortcodes() {
 					<br/><hr><br/>
 					<h3><?php echo esc_attr( mo_sl( 'Shortcode in php file' ) ); ?></h3>
 					<?php echo esc_attr( mo_sl( 'You can use shortcode in PHP file as following: ' ) ); ?>
-					<code>&lt;&#63;<?php echo esc_attr( apply_shortcodes( 'SHORTCODE' ) ); ?> /&#63;&gt;</code><br/><br/>
+					<code>&lt;&#63;<?php echo esc_attr( do_shortcode( 'SHORTCODE' ) ); ?> /&#63;&gt;</code><br/><br/>
 					<?php echo esc_attr( mo_sl( 'Replace SHORTCODE in above code with the required shortcode like <code>[miniorange_social_login theme="default"]</code>, so the final code looks like following :' ) ); ?><br/><br/>
-					<code id='7'>&lt;&#63;php echo apply_shortcodes('[miniorange_social_login theme="default"]') &#63;&gt;</code><i style= "width: 11px;height: 9px;padding-left:2px;padding-top:3px" class="far fa-fw fa-lg fa-copy mo_copy mo_copytooltip" onclick="copyToClipboard(this, '#7', '#shortcode_url33_copy')"><span id="shortcode_url33_copy" class="mo_copytooltiptext">Copy to Clipboard</span></i><br/><br/>
+					<code id='7'>&lt;&#63;php echo do_shortcode('[miniorange_social_login theme="default"]') &#63;&gt;</code><i style= "width: 11px;height: 9px;padding-left:2px;padding-top:3px" class="far fa-fw fa-lg fa-copy mo_copy mo_copytooltip" onclick="copyToClipboard(this, '#7', '#shortcode_url33_copy')"><span id="shortcode_url33_copy" class="mo_copytooltiptext">Copy to Clipboard</span></i><br/><br/>
 					<br/><hr><br/>
 					<h3><?php echo esc_attr( mo_sl( 'Shortcode for logout' ) ); ?></h3>
 					<?php echo esc_attr( mo_sl( 'You can use the following shortcode for Logout: ' ) ); ?>

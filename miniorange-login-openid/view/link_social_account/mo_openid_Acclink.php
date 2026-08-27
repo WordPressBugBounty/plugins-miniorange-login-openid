@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_linkSocialAcc() {
 	if ( mo_openid_restrict_user() ) {
 		$disable = 'disabled';

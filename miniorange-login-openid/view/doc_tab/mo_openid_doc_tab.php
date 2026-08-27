@@ -1,13 +1,17 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_doc_tab() {
-	wp_enqueue_style( 'mo_openid_style_dt', plugin_dir_url( dirname( dirname( __FILE__ ) ) ) . 'includes/css/bootstrap.min.css' );
-	wp_enqueue_script( 'mo_openid_plugins_dt_bootstrap_js', plugin_dir_url( dirname( dirname( __FILE__ ) ) ) . 'includes/js/mo-openid-bootstrap.min.js' );
-	wp_enqueue_script( 'mo_openid_plugins_dt_jquery_js', plugin_dir_url( dirname( dirname( __FILE__ ) ) ) . 'includes/js/mo-openid-jquery.min.js' );
+	wp_enqueue_style( 'mo_openid_style_dt', plugin_dir_url( dirname( dirname( __FILE__ ) ) ) . 'includes/css/bootstrap.min.css', array(), MO_OPENID_SOCIAL_LOGIN_VERSION );
+	wp_enqueue_script( 'mo_openid_plugins_dt_bootstrap_js', plugin_dir_url( dirname( dirname( __FILE__ ) ) ) . 'includes/js/mo-openid-bootstrap.min.js', array(), MO_OPENID_SOCIAL_LOGIN_VERSION, true );
+	wp_enqueue_script( 'mo_openid_plugins_dt_jquery_js', plugin_dir_url( dirname( dirname( __FILE__ ) ) ) . 'includes/js/mo-openid-jquery.min.js', array(), MO_OPENID_SOCIAL_LOGIN_VERSION, true );
+	wp_enqueue_script( 'mo_openid_youtube_iframe_api', 'https://www.youtube.com/player_api', array(), MO_OPENID_SOCIAL_LOGIN_VERSION, true );
 	?>
 
 	<head>
-		<script type="text/javascript" src="http://www.youtube.com/player_api"></script>
 	</head>
 	<style>
 

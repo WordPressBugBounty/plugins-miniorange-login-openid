@@ -1,15 +1,15 @@
-﻿=== miniOrange Social Login and Register (Discord, Google, Twitter, LinkedIn) ===
+﻿=== Social Login, Social Sharing by miniOrange ===
 Contributors: sociallogin, vkontakte, cyberlord92
 Donate link: https://www.miniorange.com
 Tags: social login, Facebook, Google, LinkedIn, X(Twitter)
-Requires at least: 4.1
-Tested up to: 7.0
-Stable tag: 7.8.2
+Requires at least: 4.4
+Tested up to: 7.1
+Stable tag: 7.9.0
 Requires PHP: 7.0
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
 
-Social Login with Discord, Facebook, Google, Twitter, LinkedIn and 40+ apps. Social login with social share and comments. Free, fast & easy! WooCommerce Integration.
+Social Login with Discord, Facebook, Google, Twitter, LinkedIn and 40+ apps. Social share & comments. Free, fast & easy! WooCommerce Integration.
 
 == Description ==
 
@@ -26,8 +26,8 @@ We provide different display options with beautiful login button customizations 
 
 = Free Social Login Features =
 
-*   Social Login with <a href="https://plugins.miniorange.com/configure-facebook-social-login-in-wordpress" target="_blank">Facebook</a>, <a href="https://plugins.miniorange.com/login-with-google-using-wordpress-social-login" target="_blank">Google</a>, <a href="https://plugins.miniorange.com/configure-discord-with-social-login-in-wordpress" target="_blank">Discord</a>, <a href="https://plugins.miniorange.com/configure-twitter-with-social-login-in-wordpress" target="_blank">Twitter</a>, <a href="http://plugins.miniorange.com/configure-vkontakte-with-social-login-in-wordpress" target="_blank">Vkontakte</a>, <a href="https://plugins.miniorange.com/configure-linkedin-with-social-login-in-wordpress" target="_blank">LinkedIn</a>, <a href="http://plugins.miniorange.com/configure-amazon-with-social-login-in-wordpress" target="_blank">Amazon</a>, Salesforce & <a href="https://plugins.miniorange.com/guide-to-configure-yahoo-social-login-in-wordpress" target="_blank">Yahoo</a>,etc.
-*   **One-click** activation for Login with Google, Amazon, Vkontakte, LinkedIn, Yahoo, Salesforce, Snapchat and Dribbble.
+*   Social Login with <a href="https://plugins.miniorange.com/configure-facebook-social-login-in-wordpress" target="_blank">Facebook</a>, <a href="https://plugins.miniorange.com/login-with-google-using-wordpress-social-login" target="_blank">Google</a>, <a href="https://plugins.miniorange.com/configure-discord-with-social-login-in-wordpress" target="_blank">Discord</a>, <a href="https://plugins.miniorange.com/configure-twitter-with-social-login-in-wordpress" target="_blank">Twitter</a>, <a href="http://plugins.miniorange.com/configure-vkontakte-with-social-login-in-wordpress" target="_blank">Vkontakte</a>, <a href="https://plugins.miniorange.com/configure-linkedin-with-social-login-in-wordpress" target="_blank">LinkedIn</a>, <a href="http://plugins.miniorange.com/configure-amazon-with-social-login-in-wordpress" target="_blank">Amazon</a> & <a href="https://plugins.miniorange.com/guide-to-configure-yahoo-social-login-in-wordpress" target="_blank">Yahoo</a>,etc.
+*   Quick activation for Login with Google, Amazon, Vkontakte, LinkedIn, Yahoo, Snapchat and Dribbble using your own app credentials for each provider.
 *   **Flexible display** - Display Social login icons anywhere on your websites.
 *   **Sync user data** - Sync user data from multiple social network providers like Facebook, Google, Microsoft into one social login account.
 *   **Secure Login** - User Login with safe and secure authorization and authentication protocols like OAuth and OpenID.
@@ -100,8 +100,8 @@ We provide different display options with beautiful login button customizations 
 *   **24 / 7 Support** - Using email and in-plugin support form.
 
 = Why miniOrange Social Login =
-* **11 Free Social Login apps** - Login with popular social network providers namely Facebook, Google, Discord, Twitter, LinkedIn, Vkontakte, Amazon, Salesforce, Yahoo, Snapchat and Dribbble all available in the free plan.
-* **No Setup required** - Simply register with us and use our pre-configured application. We will handle everything for you.
+* **10 Free Social Login apps** - Login with popular social network providers namely Facebook, Google, Discord, Twitter, LinkedIn, Vkontakte, Amazon, Yahoo, Snapchat and Dribbble all available in the free plan.
+* **Easy Setup** - Register your own app with each provider and enter its credentials in the plugin; step-by-step instructions are provided for every app.
 * **24 / 7 Support** - If you face any issues or if you simply require assistance with the Social Login plugin then please contact us. Whatever it may be we will solve the issue for you and get everything working as soon as possible.
 * **Tons of Free Features** - We have a huge roster of free features. With other plugins, you will have to pay for these features.
 * **Icon Customizations** - Flexible icon customizations for Social Login and Social Share icons. No CSS knowledge is needed! Choose from different themes, shapes, and sizes. Pick any color you want to display the social icons.
@@ -277,6 +277,10 @@ Please email us at info@miniorange.com. You can also submit your query from the 
 16. Social Sharing icons without background.
 
 ==Changelog==
+= 7.9.0 =
+* Security fixes.
+* Removed pre-configured app login.
+* Added compatibility with WP 7.1.
 
 = 7.8.2 =
 * Some security fixes
@@ -1067,6 +1071,10 @@ SECURITY FIXES
 * First version of Social Login, Social Sharing plugin.
 
 == Upgrade Notice ==
+= 7.9.0 =
+* Security fixes.
+* Removed pre-configured app login.
+* Added compatibility with WP 7.1.
 
 = 7.8.2 =
 * Some security fixes
@@ -1164,14 +1172,7 @@ SECURITY FIXES
 * Minor UI change.
 
 = 7.5.6 =
-* Added Temporary login feature.
-* Added Hover, Custom hover, and Smart Theme for social login Icons.
-* Fixed Yahoo attribute mapping.
-* Updated Facebook setup instructions.
-* Updated Facebook and Google setup videos.
-* Published Christmas and EOSS.
-* Added Fitbit, Trello and Stackoverflow apps in Premium and all-inclusive app.
-* Added connect with messenger feature in Premium and all-inclusive app.
+Added Temporary Login and new icon hover themes; fixed Yahoo attribute mapping and updated Facebook setup instructions.
 
 = 7.5.5 =
 * Added meeting scheduler in support section.
@@ -1209,27 +1210,14 @@ SECURITY FIXES
 * Resolved load time issue
 
 = 7.4.9 =
-* Resolved blank page redirection issue.
-* Updated Instructions for Facebook and Google.
-* Updated UI for Popular Integration Tab.
-* Added pre-activated apps for Google, LinkedIN, and Amazon.
-* Added and introduced Rest API / Mobile SSO solution for Android and iOS applications.
-* Introduced multisite plans for Standard, Premium, and All-inclusive plans.
-* Added and introduced new Discord Add-on.
+Resolved a blank page redirection issue; added pre-activated Google/LinkedIn/Amazon apps and a new REST API / Mobile SSO solution.
 
 = 7.4.8 =
 * Facebook and Google icon issue resolved.
 * Minor UI changes.
 
 = 7.4.7 =
-* Compatible with WordPress 5.7
-* Added PNG image for Facebook and Google.
-* Removed unwanted JS files.
-* Resolve conflict with Eduma Theme.
-* Added options to load Font Awesome and Bootstrap files.
-* Added Document section for Applications and Integrations.
-* Added DropBox app and Basic analysis Report in All-Inclusive plan.
-* Added white background option in Premium Plugin.
+Added WordPress 5.7 compatibility, options to load Font Awesome/Bootstrap files, and a new Documentation section.
 
 = 7.4.6 =
 * Updated Instructions for Facebook, Google, Twitter, and LinkedIn
@@ -1271,12 +1259,7 @@ SECURITY FIXES
 * Licensing plan changes for mini plans like Apple plan, WooCommerce plan, etc.
 
 = 7.4.0 =
-* Added Documentation and videos for WooCommerce, BuddyPress, MailChimp, and Paid membership Pro integrations.
-* Resolved CSS conflicts with other themes.
-* Image optimization for all application images.
-* Minor UI changes.
-* Compatible with LMS Tutor, Flatsome, and BuddyBoss themes.
-* Introduced new plan for Apple, Discord, and Twitch Application.
+Added integration docs for WooCommerce, BuddyPress, MailChimp, and Paid Memberships Pro; resolved CSS conflicts with other themes.
 
 = 7.3.12 =
 * Tested all features of Social login, sharing, and commenting with the latest WordPress version. Compatible with WordPress version 5.5
@@ -1296,14 +1279,7 @@ SECURITY FIXES
 * Minor UI Changes.
 
 = 7.3.9 =
-* Added the two display options for WooCommerce.
-* Added bulk instances for Social Login plans.
-* Added 25+ sharing applications in social sharing paid plan.
-* Added Buffer for share counts social sharing paid plan.
-* Added social share service button like, recommended, pin it in social share paid plan.
-* Added Twitter follow button, Email subscription, new customization of icons, different WooCommerce display options in social sharing paid plan.
-* Resolved class name conflict for Social Login apps.
-* Minor UI changes.
+Added WooCommerce display options, bulk plan instances, and 25+ new social sharing apps in the paid plan.
 
 = 7.3.8 =
 * Updated Odnoklassniki custom app fix in premium versions.
@@ -1334,12 +1310,7 @@ SECURITY FIXES
 * Fixed add-on update value issue.
 
 = 7.3.2 =
-* Updated Social login application Yahoo API.
-* Updated feedback on deactivation.
-* Minor UI changes.
-* Added a new social login plugin for WooCommerce integration.
-* Added auto as a parameter for width in shortcode of social login icons.
-* Added Reddit, Foursquare, Snapchat, Teamsnap, Live Journal, Odnoklassniki, Naver.
+Updated the Yahoo login API and added Reddit, Foursquare, Snapchat, and several other new social login apps.
 
 = 7.3.1 =
 * Instagram instructions updated with new API'S.
@@ -1347,25 +1318,10 @@ SECURITY FIXES
 * Added Clear button to reset app id and secret.
 
 = 7.3.0 =
-* Linkedin username return issue solved.
-* On load class creation issue resolved.
-* Facebook share API update
-* Major UI changes.
-* Added translation.
-* Added setup plugin video button
-* Added Social login applications like Wechat, Baidu, Renren & QQ app in the premium section.
-* Added top-up plans
+Fixed LinkedIn username and Facebook share API issues; major UI changes and new top-up plans.
 
 = 7.2.7 =
-* Major UI changes.
-* Drag and change positions of icons.
-* Added Custom app for Social login applications like google, Vkontakte, Instagram, LinkedIn, Amazon, Salesforce, windows live, and yahoo.
-* Added copy to clipboard option.
-* Added Copy to clipboard for instructions to set up custom apps and shortcodes.
-* Added Social Share count Feature.
-* Added Horizontal long buttons option in shortcode.
-* Added more customizable options in Social Login shortcode.
-* Fixed GDPR issue.
+Major UI changes: drag-to-reorder icons, custom apps for more providers, and a new social share count feature.
 
 = 7.2.6 =
 * Added Social Share count Feature.
@@ -1501,19 +1457,10 @@ SECURITY FIXES
 *   Removed rows in account linking table that have empty field values
 
 = 6.6.0 =
-*   Added resend OTP in Profile Completion when user resisters through Social login.
-*   Added column timestamp in account linking table
-*   Added option to disable particular Social login custom app
-*   Added include_email parameter in for the Twitter custom app
-*   Added prompt to ask the user for confirmation on custom app deletion
-*   Code cleanup
+Added OTP resend on Profile Completion and an option to disable individual social login custom apps.
 
 = 6.5.0 =
-*   Fix for issue during WP default login (unset session variables on logout)
-*   Fix for issue during Facebook login (used correct variable names)
-*   Fix for empty email insertion in account linking table (added empty email check before insertion)
-*   Fixed 'Add Application' button UI
-*   Code cleanup
+Fixed session issues on WP default login and Facebook login, and prevented empty emails in the account linking table.
 
 = 6.4.1 =
 *   Fix for issue in sending OTP during registration
@@ -1776,10 +1723,7 @@ SECURITY FIXES
 *  Fix - image for social login icons
 
 = 4.3 =
-*  Added Social media applications - Vkontakte, Tumblr, StumbleUpon, Pocket, Digg, Delicious, Odnoklassniki for Social sharing
-*  Added title to Social Login and Social Sharing icons, visible on hover
-*  Redirect after logout is now optional when the user login with the Social login plugin
-*  Improved Help & Troubleshooting
+Added Vkontakte, Tumblr, StumbleUpon, and other social sharing apps; redirect after logout is now optional.
 
 = 4.2.2 =
 *  Fix - minimum width of Social Login long button reduced
@@ -1797,15 +1741,7 @@ SECURITY FIXES
 *  Change in troubleshooting instructions
 
 = 4.1 =
-*  Added social media application Twitter on Social Login
-*  Added shortcode support for Social Login and Social Sharing(horizontal and vertical)
-*  Added Redirect URL for logout
-*  Added Troubleshooting section in the plugin
-*  Social Sharing icons can be added before and after content
-*  Updated API for Facebook sharing
-*  Updated reset password API to send email
-*  Bug fixes for Social login and Social Sharing icons
-*  Improved theme compatibility with Social Login plugin
+Added Twitter social login, shortcode support for Social Login/Sharing, and a logout redirect URL option.
 
 = 4.0.1 =
 *  Added support for an excerpt in Social Sharing
@@ -1813,11 +1749,7 @@ SECURITY FIXES
 *  Improved theme compatibility
 
 = 4.0 =
-*  Set Redirect URL for Social Login
-*  Vertical floating sharing widget and horizontal sharing widget for Social Sharing
-*  Preview & Customize buttons and icons - new themes and option to change the size for Social Login and Social Sharing
-*  Twitter username for Social Sharing
-*   Minor UI changes for social login icons
+Added a redirect URL for Social Login and new vertical/horizontal sharing widgets with customizable icon themes.
 
 = 3.0.5 =
 * Bugfix for Social Login for older PHP versions.

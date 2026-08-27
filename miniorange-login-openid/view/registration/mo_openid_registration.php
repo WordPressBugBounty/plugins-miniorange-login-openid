@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_openid_registration() {     ?>
 	<form id="registration" name="registration" method="post" action="">
 		<input type="hidden" name="option" value="mo_openid_enable_registration" />
@@ -52,7 +56,7 @@ function mo_openid_registration() {     ?>
 				</label>
 			</div>
 			<br/><hr>
-			<h3><?php echo esc_attr( mo_sl( 'Admin Disable bar' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h3>
+			<h3><?php echo esc_attr( mo_sl( 'Admin Disable bar' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h3>
 			<div>
 				<input type="checkbox" disabled>Administrator &nbsp;&nbsp;&nbsp;
 				<input type="checkbox" disabled>Author &nbsp;&nbsp;&nbsp;
@@ -63,7 +67,7 @@ function mo_openid_registration() {     ?>
 			<label style="cursor: auto" class="mo_openid_note_style"><?php echo esc_attr( mo_sl( 'This feature disables admin bar form selected roles of the users' ) ); ?>.</label>
 
 			<br/><hr>
-			<h3><?php echo esc_attr( mo_sl( 'Send user activation link over email' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h3>
+			<h3><?php echo esc_attr( mo_sl( 'Send user activation link over email' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h3>
 			<div>
 				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Send user activation link over email - on User Registration' ) ); ?>
 					<input type="checkbox"  /><br>
@@ -80,7 +84,7 @@ function mo_openid_registration() {     ?>
 
 
 			<br/><hr>
-			<h3><?php echo esc_attr( mo_sl( 'Enable Registration For Pages' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h3>
+			<h3><?php echo esc_attr( mo_sl( 'Enable Registration For Pages' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h3>
 			<div>
 				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Enable registration for specific pages' ) ); ?>
 					<input type="checkbox"  /><br>

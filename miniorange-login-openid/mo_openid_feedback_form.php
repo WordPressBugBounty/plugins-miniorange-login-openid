@@ -1,14 +1,19 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_display_feedback_form(){
 
-    if ( 'plugins.php' != basename(sanitize_text_field($_SERVER['PHP_SELF'])) ) {
+    $php_self = isset( $_SERVER['PHP_SELF'] ) ? sanitize_text_field( wp_unslash( $_SERVER['PHP_SELF'] ) ) : '';
+    if ( 'plugins.php' != basename( $php_self ) ) {
         return;
     }
     wp_enqueue_style( 'wp-pointer' );
     wp_enqueue_script( 'wp-pointer' );
     wp_enqueue_script( 'utils' );
-    wp_enqueue_style( 'mo_openid_plugins_page_style', plugins_url( 'includes/css/mo_openid_feedback.css', __FILE__ ) );
+    wp_enqueue_style( 'mo_openid_plugins_page_style', plugins_url( 'includes/css/mo_openid_feedback.css', __FILE__ ), array(), MO_OPENID_SOCIAL_LOGIN_VERSION );
 
     ?>
 

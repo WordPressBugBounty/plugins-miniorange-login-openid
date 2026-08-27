@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_woocommerce_add_on() { ?>
 	<div class="mo_openid_table_layout" id="wca_adv_disp" style="display: block">
 		<table>

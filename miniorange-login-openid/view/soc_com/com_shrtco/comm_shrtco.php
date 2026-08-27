@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function select_comment_shortcode() {
 	?>
 	<div class="mo_openid_table_layout" id="openid_comments_shortcode" style="font-size:13px !important">

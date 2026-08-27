@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 require_once ABSPATH . 'wp-includes/pluggable.php';
 
 echo '  <div id="mo_openid_rateus_myModal" class="mo_openid_modal_rateus">

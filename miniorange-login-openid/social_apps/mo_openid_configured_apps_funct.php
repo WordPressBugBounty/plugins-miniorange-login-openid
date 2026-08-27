@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_openid_validate_code() {     if (isset($_REQUEST['code'])) {     // phpcs:ignore
         $code = sanitize_text_field($_REQUEST['code']);     // phpcs:ignore
 		return $code;
@@ -8,12 +12,18 @@ function mo_openid_validate_code() {     if (isset($_REQUEST['code'])) {     // 
 		update_option( 'mo_openid_test_configuration', 0 );
 		echo '<div style="color: #a94442;background-color: #f2dede;padding: 15px;margin-bottom: 20px;text-align:center;border:1px solid #E6B3B2;font-size:18pt;">TEST FAILED</div>
 						<div style="color: #a94442;font-size:14pt; margin-bottom:20px;">WARNING: Please enter correct scope value and try again. <br/>';
-		print_r(esc_attr($_REQUEST));   //phpcs:ignore
+		echo esc_html( wp_json_encode( map_deep( wp_unslash( $_REQUEST ), 'sanitize_text_field' ) ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- this is the OAuth provider's own redirect back to the site (not a form this site issued a nonce for); read-only diagnostic dump of the returned parameters, gated behind is_user_logged_in() plus the admin having just clicked "Test Configuration".
 		echo '</div>
 						<div style="display:block;text-align:center;margin-bottom:4%;"><img style="width:15%;"src="' . esc_url( plugin_dir_url( __FILE__ ) ) . '/includes/images/wrong.png"></div>';
 		exit;
 	} else {
-		echo esc_attr(sanitize_text_field($_REQUEST['error_description'])) . "<br>";        // phpcs:ignore
+		// Not every provider sends error_description -- e.g. Google's consent-denial callback
+		// carries only error=access_denied -- so this can't be read unconditionally without
+		// triggering a PHP warning (which gets printed into the response, along with the
+		// server's absolute file path and line number, for every unauthenticated visitor who
+		// declines consent).
+		$error_description = isset( $_REQUEST['error_description'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['error_description'] ) ) : 'Access was denied.'; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only display of the provider's own error message; no state-changing action is taken from it.
+		echo esc_attr( $error_description ) . '<br>';
 		wp_die( 'Allow access to your profile to get logged in. Click <a href=' . esc_url( get_site_url() ) . '>here</a> to go back to the website.' );
 		exit;
 	}
@@ -117,7 +127,7 @@ function mo_openid_get_access_token( $postData, $access_token_uri, $appname ) {
 
 			echo '<div style="color: #a94442;background-color: #f2dede;padding: 15px;margin-bottom: 20px;text-align:center;border:1px solid #E6B3B2;font-size:18pt;">TEST FAILED</div>
                     <div style="color: #a94442;font-size:14pt; margin-bottom:20px;">WARNING: Client secret is incorrect for this app. Please check the client secret and try again.<br/>';
-			print_r( $access_token_json_output );
+			echo esc_html( wp_json_encode( $access_token_json_output ) );
 			echo '</div>
                     <div style="display:block;text-align:center;margin-bottom:4%;"><img style="width:15%;"src="' . esc_url( plugin_dir_url( __FILE__ ) . '/includes/images/wrong.png' ) . '"></div>';
 			exit;
@@ -200,14 +210,13 @@ function mo_openid_get_wp_style() {
 function mo_openid_insert_query( $social_app_name, $user_email, $userid, $social_app_identifier ) {
 	// check if none of the column values are empty
 	if ( ! empty( $social_app_name ) && ! empty( $user_email ) && ! empty( $userid ) && ! empty( $social_app_identifier ) ) {
-		date_default_timezone_set( 'Asia/Kolkata' );
-		$date = date( 'Y-m-d H:i:s' );
+		$date = get_date_from_gmt( gmdate( 'Y-m-d H:i:s' ), 'Y-m-d H:i:s' );
 
 		global $wpdb;
 		$db_prefix  = $wpdb->prefix;
 		$table_name = $db_prefix . 'mo_openid_linked_user';
 
-		$result = $wpdb->insert(
+		$result = $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- custom plugin table.
 			$table_name,
 			array(
 				'linked_social_app' => $social_app_name,
@@ -231,6 +240,17 @@ function mo_openid_insert_query( $social_app_name, $user_email, $userid, $social
 							exit;*/
 			wp_die( 'Error in insert query' );
 		}
+
+		// Keep the lookups cached via mo_openid_cache_key() in sync with this insert.
+		mo_openid_cache_flush_query(
+			array(
+				'linked_user_by_app_identifier:' . $social_app_name . '|' . $social_app_identifier,
+				'linked_user_by_email_app:' . $user_email . '|' . $social_app_name,
+				'linked_user_by_email:' . $user_email,
+				'linked_user_by_user_id:' . $userid,
+				'linked_user_apps_by_user_id:' . $userid,
+			)
+		);
 	}
 }
 
@@ -249,8 +269,20 @@ function mo_openid_start_session_login( $session_values ) {
 	$_SESSION['social_user_id']  = isset( $session_values['social_user_id'] ) ? $session_values['social_user_id'] : '';
 }
 function mo_openid_login_user( $linked_email_id, $user_id, $user, $user_picture, $user_mod_msg ) {
-	if ( get_option( 'moopenid_social_login_avatar' ) && isset( $user_picture ) ) {
-		update_user_meta( $user_id, 'moopenid_user_avatar', $user_picture );
+	if ( get_option( 'moopenid_social_login_avatar' ) && ! empty( $user_picture ) ) {
+		// user_picture can come from client-supplied POST data (the custom registration, OTP, and
+		// profile-completion forms all accept a `user_picture` field directly), not just the OAuth
+		// provider's own profile response, so it must be treated as untrusted input. Store it only
+		// if it validates as a genuine http/https URL -- this is how a crafted value like
+		// `x" onerror=...` (no angle brackets needed, so sanitize_text_field() upstream never
+		// touches it) would otherwise end up stored verbatim and rendered unescaped into every
+		// viewer's <img src> by mo_social_login_custom_avatar() et al. Output there is also escaped
+		// as defense in depth, but persisting anything other than a real URL here has no legitimate
+		// use in the first place.
+		$validated_picture = esc_url_raw( $user_picture, array( 'http', 'https' ) );
+		if ( ! empty( $validated_picture ) ) {
+			update_user_meta( $user_id, 'moopenid_user_avatar', $validated_picture );
+		}
 	}
 
 	include_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -273,7 +305,7 @@ function mo_openid_login_user( $linked_email_id, $user_id, $user, $user_picture,
 // delete rows from account linking table that correspond to deleted user
 function mo_openid_delete_account_linking_rows( $user_id ) {
 	global $wpdb;
-	$result = $wpdb->get_var( $wpdb->prepare( 'DELETE from ' . $wpdb->prefix . 'mo_openid_linked_user where user_id = %s ', $user_id ) );
+	$result = $wpdb->get_var( $wpdb->prepare( 'DELETE from ' . $wpdb->prefix . 'mo_openid_linked_user where user_id = %s ', $user_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- DELETE has no cacheable result; cache for this user_id is flushed below.
 	if ( $result === false ) {
 		/*
 		$wpdb->show_errors();
@@ -281,6 +313,14 @@ function mo_openid_delete_account_linking_rows( $user_id ) {
 		exit;*/
 		wp_die( esc_attr( get_option( 'mo_delete_user_error_message' ) ) );
 	}
+
+	// Keep the lookups cached via mo_openid_cache_key() in sync with this delete.
+	mo_openid_cache_flush_query(
+		array(
+			'linked_user_by_user_id:' . $user_id,
+			'linked_user_apps_by_user_id:' . $user_id,
+		)
+	);
 }
 
 function mo_openid_profile_completion_form( $user_val, $existing_uname = '1' ) {
@@ -304,6 +344,7 @@ function mo_openid_profile_completion_form( $user_val, $existing_uname = '1' ) {
 		$extra_instruction = '';
 	}
 	$nonce = wp_create_nonce( 'mo-openid-profile-form-submitted-nonce' );
+	// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- this builds a standalone HTML document string (its own <head>) for a raw popup, not part of the normal wp_head()/wp_footer() page render, so wp_enqueue_style() has no effect here.
 	$html  = '<style>.form-input-validation.note {color: #d94f4f;}</style>
 	    		<style>
                         .mocomp {
@@ -318,7 +359,7 @@ function mo_openid_profile_completion_form( $user_val, $existing_uname = '1' ) {
                 </style>
                 <head>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-					<link rel="stylesheet" href=' . $path . ' type="text/css" media="all" /></head>     
+					<link rel="stylesheet" href=' . $path . ' type="text/css" media="all" /></head>
                     <body class="login login-action-login wp-core-ui  locale-en-us">
                     <div style="position:fixed;background:#f1f1f1;"></div>
                     <div id="add_field" style="position:fixed;top: 0;right: 0;bottom: 0;left: 0;z-index: 1;padding-top:2%;">

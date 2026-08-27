@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_openid_integrations() {
     $active_tab_int = isset( $_GET[ 'tab' ]) ? sanitize_text_field($_GET[ 'tab' ]) : 'integration-woocommerce'; //phpcs:ignore
 	if ( $active_tab_int == 'integration' ) {
@@ -7,14 +11,14 @@ function mo_openid_integrations() {
 	?>
 	<div id="tab">
 		<h2 class="nav-tab-wrapper">
-			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-woocommerce' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-woocommerce' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">WooCommerce</a>
-			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-buddypress' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-buddypress' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">BuddyPress</a>
-			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-mailchimp' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-mailchimp' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">MailChimp</a>
-			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-hubspot' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-hubspot' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">HubSpot</a>
-			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-discord' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-discord' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">Discord</a>
-			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-paidmemb' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-paidmemb' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">Paid Membershi Pro</a>
-			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-memberpress' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-memberpress' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">MemberPress</a>
-			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-customregistration' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-customregistration' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">Custom Registration</a>
+			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-woocommerce' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-woocommerce' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">WooCommerce</a>
+			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-buddypress' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-buddypress' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">BuddyPress</a>
+			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-mailchimp' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-mailchimp' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">MailChimp</a>
+			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-hubspot' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-hubspot' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">HubSpot</a>
+			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-discord' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-discord' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">Discord</a>
+			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-paidmemb' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-paidmemb' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">Paid Membershi Pro</a>
+			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-memberpress' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-memberpress' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">MemberPress</a>
+			<a class="mo-nav-tab <?php echo $active_tab_int == 'integration-customregistration' ? 'mo-nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration-customregistration' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">Custom Registration</a>
 		</h2>
 	</div>
 

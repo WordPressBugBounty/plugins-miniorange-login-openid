@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_customise_social_icons() {
 	?><br/>
 	<form id="form-apps" name="form-apps" method="post" action="">
@@ -347,7 +351,7 @@ function mo_openid_customise_social_icons() {
 				</div>
 			</div><br/>
 				<div style="border: 1px solid"><br>
-					<b style="font-size: 17px;"><?php echo esc_attr( mo_sl( 'Custom CSS' ) ); ?> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></b>
+					<b style="font-size: 17px;"><?php echo esc_attr( mo_sl( 'Custom CSS' ) ); ?> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></b>
 						<textarea disabled type="text" id="mo_openid_custom_css" style="resize: vertical; width:400px; height:180px;  margin:5% auto;" rows="6" name="mo_openid_custom_css"></textarea><br/><b>Example CSS:</b>
 						<p>NOTE: Please keep the class name same as example CSS.</p>
 						<pre>

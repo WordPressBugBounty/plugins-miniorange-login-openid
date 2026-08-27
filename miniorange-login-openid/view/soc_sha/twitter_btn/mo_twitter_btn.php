@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_twitter_mo_btn() {
 	?>
 	<form id="mo_openid_twitter_button" name="mo_openid_twitter_button" method="post" action="">
@@ -193,7 +197,7 @@ function mo_twitter_mo_btn() {
 	<script>
 		//to set heading name
 		jQuery('#mo_openid_page_heading').text('<?php echo esc_attr( mo_sl( 'Twitter Follow Button' ) ); ?>');
-		var temp = jQuery("<a style=\"left: 1%; padding:4px; position: relative; text-decoration: none\" class=\"mo-openid-premium\" href=\"<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>\">PRO</a>");
+		var temp = jQuery("<a style=\"left: 1%; padding:4px; position: relative; text-decoration: none\" class=\"mo-openid-premium\" href=\"<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>\">PRO</a>");
 		jQuery("#mo_openid_page_heading").append(temp);
 		var win_height = jQuery('#mo_openid_menu_height').height();
 		//win_height=win_height+18;

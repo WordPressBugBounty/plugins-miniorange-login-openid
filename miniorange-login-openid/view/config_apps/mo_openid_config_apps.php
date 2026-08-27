@@ -1,7 +1,11 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 // configure apps menu page
 function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ //phpcs:ignore
-		$nonce = sanitize_text_field( $_POST['mo_openid_tour_nonce'] );
+		$nonce = isset( $_POST['mo_openid_tour_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_tour_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mo-openid-tour-nonce' ) ) {
 			wp_die( '<strong>ERROR WPSL44</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 		} else {
@@ -21,6 +25,15 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 				<div class="mo-openid-sort-apps ui-sortable" id="sortable">
 					<?php
 					foreach ( $selected_applications as $apps ) {
+						// Skip apps no longer supported (e.g. Salesforce, which only ever worked
+						// through the now-removed miniOrange-hosted broker and has no custom-app
+						// implementation of its own) -- an existing site's stored `app_pos` option
+						// isn't touched by changing the default list, so it can still name an app
+						// whose social_apps/*.php file no longer exists; requiring it unconditionally
+						// would fatal-error this whole settings page.
+						if ( ! mo_openid_validate_social_app( $apps ) ) {
+							continue;
+						}
 						$icons = $apps;
 						if ( $apps == 'vkontakte' ) {
 							$icons = 'vk';
@@ -164,171 +177,29 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 			enable_app(a,app_name,'0');
 		}
 
-		//defination to enable app
+		//defination to enable app -- every app now requires admin-configured custom app
+		//credentials (the miniOrange-hosted pre-configured/broker app has been removed, as
+		//that API is deprecated), so this just checks those credentials exist before enabling.
 		function enable_app(a,app_name,toggle) {
-			var mo_openid_customer_toggle_update_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-customer-toggle-update-nonce' ) ); ?>';
-			var enable_app = 'mo_openid'.concat(app_name).concat('_enable');
 			var active_button = document.getElementById('mo_openid_'.concat(app_name).concat('_active_div'));
-			jQuery.ajax({
-				url: "<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>", //the page containing php script
-				method: "POST", //request type,
-				dataType: 'json',
-				data: {
-					action: 'mo_register_customer_toggle_update',
-					'mo_openid_customer_toggle_update_nonce' : mo_openid_customer_toggle_update_nonce,
-				},
-				success: function (result) {
-					// if (result.status) {
-					if (true) {
-						if (a.checked == true) {
-							if (app_name == 'facebook' || app_name == 'twitter' || app_name == 'snapchat' || app_name == 'dribbble' || app_name == 'discord' || app_name == 'google' || app_name == 'amazon' || app_name == 'vkontakte' || app_name == 'linkedin' || app_name == 'linkedin_oidc' || app_name == 'yahoo') {
-								var mo_openid_check_capp_enable_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-check-capp-enable-nonce' ) ); ?>';
-								jQuery.ajax({
-									type: 'POST',
-									url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
-									data: {
-										action: 'mo_openid_check_capp_enable',
-										app_name: app_name,
-										'mo_openid_check_capp_enable_nonce': mo_openid_check_capp_enable_nonce,
-									},
-									success: function (result) {
-										if (result.status) {
-											document.getElementById(app_name).setAttribute("style", "opacity:1");
-											active_button.style.display = "block";
-											if(toggle=='1')
-												jQuery("#mo_apps_".concat(app_name)).prop('checked', true);
-											mo_show_success_error_msg('success',app_name.charAt(0).toUpperCase()+app_name.substr(1)+' is activated sucessfully');
-											var mo_openid_sso_enable_app_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-sso-enable-app' ) ); ?>';
-											jQuery.ajax({
-												type: 'POST',
-												url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
-												data: {
-													'mo_openid_sso_enable_app_nonce': mo_openid_sso_enable_app_nonce,
-													action: 'mo_openid_app_enable',
-													app_name: app_name,
-													enabled: a.checked,
-												},
-												success: function (data) {
-												},
-												error: function (data) {
-												}
-											});
-										} else {
-											jQuery("#mo_apps_".concat(app_name)).prop('checked', false);
-											mo_show_success_error_msg('success','Please set custom app for '.concat(app_name));
-											jQuery ("#mo_facebook_notice").show();
-											jQuery( "#mo_register_customer_toggle").hide();
-											getappsInLine(app_name);
-										}
-									},
-									error: function (data) {}
-								});
-							}
-							else {
-								document.getElementById(app_name).setAttribute("style", "opacity:1");
-								active_button.style.display = "block";
-								if(toggle=='1') {
-									jQuery("#mo_openid_enable_custom_app").prop('checked', true);
-									jQuery("#mo_apps_".concat(app_name)).prop('checked', true);
-								}
-								mo_show_success_error_msg('success',app_name.charAt(0).toUpperCase()+app_name.substr(1)+' is activated sucessfully');
-								enable_default_app_db(app_name,a.checked);
-							}
-						} else {
-							document.getElementById(app_name).setAttribute("style", "opacity:0.6");
-							active_button.style.display = "none";
-							if(toggle=='1') {
-								jQuery("#mo_openid_enable_custom_app").prop('checked', false);
-								jQuery("#mo_apps_".concat(app_name)).prop('checked', false);
-							}
-							mo_show_success_error_msg('success',app_name.charAt(0).toUpperCase()+app_name.substr(1)+' is deactivated sucessfully');
-							enable_default_app_db(app_name,a.checked);
-						}
-
-					}
-					else {
-						if (a.checked == true) {
-							if (app_name == 'salesforce') {
-								jQuery("#mo_apps_salesforce").prop('checked', false);
-								handle_salesforce();
-							} else {
-								var mo_openid_check_capp_enable_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-check-capp-enable-nonce' ) ); ?>';
-								jQuery.ajax({
-									type: 'POST',
-									url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
-									data: {
-										action: 'mo_openid_check_capp_enable',
-										app_name: app_name,
-										'mo_openid_check_capp_enable_nonce': mo_openid_check_capp_enable_nonce,
-									},
-									success: function (result) {
-										if (result.status) {
-											document.getElementById(app_name).setAttribute("style", "opacity:1");
-											active_button.style.display = "block";
-											if(toggle=='1')
-												jQuery("#mo_apps_".concat(app_name)).prop('checked', true);
-											mo_show_success_error_msg('success',app_name.charAt(0).toUpperCase()+app_name.substr(1)+' is activated sucessfully');
-											var mo_openid_sso_enable_app_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-sso-enable-app' ) ); ?>';
-											jQuery.ajax({
-												type: 'POST',
-												url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
-												data: {
-													'mo_openid_sso_enable_app_nonce': mo_openid_sso_enable_app_nonce,
-													action: 'mo_openid_app_enable',
-													app_name: app_name,
-													enabled: a.checked,
-												},
-												success: function (data) {
-												},
-												error: function (data) {
-												}
-											});
-										} else {
-											jQuery("#mo_apps_".concat(app_name)).prop('checked', false);
-											if(app_name=='facebook' || app_name == 'twitter' || app_name == 'snapchat' || app_name == 'dribbble' || app_name == 'discord')
-											{
-												jQuery ("#mo_facebook_notice").show();
-												jQuery( "#mo_register_customer_toggle").hide();
-												mo_show_success_error_msg('success','Please set up custom app for Facebook');
-											}
-											else {
-												jQuery ("#mo_facebook_notice").hide();
-												var mo_openid_customer_toggle_update_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-customer-toggle-update-nonce' ) ); ?>';
-												jQuery.ajax({
-													url: "<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>", //the page containing php script
-													method: "POST", //request type,
-													dataType: 'json',
-													data: {
-														action: 'mo_register_customer_toggle_update',
-														'mo_openid_customer_toggle_update_nonce' : mo_openid_customer_toggle_update_nonce,
-
-													},
-													success: function (result){
-														// if (result.status){
-														if (true){
-															jQuery( "#mo_register_customer_toggle").hide();
-														}
-														else
-															jQuery( "#mo_register_customer_toggle").show();
-													}
-												});
-												mo_show_success_error_msg('error','Please set up custom app');
-											}
-											getappsInLine(app_name);
-										}
-									},
-									error: function (data) {
-									}
-								});
-							}
-						}
-						else {
-							document.getElementById(app_name).setAttribute("style", "opacity:0.6");
-							active_button.style.display = "none";
-							var mo_openid_sso_enable_app_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-sso-enable-app' ) ); ?>';
+			if (a.checked == true) {
+				var mo_openid_check_capp_enable_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-check-capp-enable-nonce' ) ); ?>';
+				jQuery.ajax({
+					type: 'POST',
+					url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
+					data: {
+						action: 'mo_openid_check_capp_enable',
+						app_name: app_name,
+						'mo_openid_check_capp_enable_nonce': mo_openid_check_capp_enable_nonce,
+					},
+					success: function (result) {
+						if (result.status) {
+							document.getElementById(app_name).setAttribute("style", "opacity:1");
+							active_button.style.display = "block";
 							if(toggle=='1')
 								jQuery("#mo_apps_".concat(app_name)).prop('checked', true);
-							mo_show_success_error_msg('success',app_name.charAt(0).toUpperCase()+app_name.substr(1)+' is deactivated sucessfully');
+							mo_show_success_error_msg('success',app_name.charAt(0).toUpperCase()+app_name.substr(1)+' is activated sucessfully');
+							var mo_openid_sso_enable_app_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-sso-enable-app' ) ); ?>';
 							jQuery.ajax({
 								type: 'POST',
 								url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
@@ -343,10 +214,24 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 								error: function (data) {
 								}
 							});
+						} else {
+							jQuery("#mo_apps_".concat(app_name)).prop('checked', false);
+							mo_show_success_error_msg('success','Please set custom app for '.concat(app_name));
+							jQuery ("#mo_facebook_notice").show();
+							getappsInLine(app_name);
 						}
-					}
+					},
+					error: function (data) {}
+				});
+			} else {
+				document.getElementById(app_name).setAttribute("style", "opacity:0.6");
+				active_button.style.display = "none";
+				if(toggle=='1') {
+					jQuery("#mo_apps_".concat(app_name)).prop('checked', false);
 				}
-			});
+				mo_show_success_error_msg('success',app_name.charAt(0).toUpperCase()+app_name.substr(1)+' is deactivated sucessfully');
+				enable_default_app_db(app_name,a.checked);
+			}
 		}
 
 		//to enable/disable app
@@ -392,21 +277,9 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 						'<div class="mo_openid_popup-content">'+
 							'<div style="margin-bottom: 2px"><center><i style="margin-left:40%;color: white; border-radius:4px; display: inline; font-size:1.7em;padding:3px;" id="custom_app_name_image"></i>&nbsp;<h1 style="display: inline" id="custom_app_name"></h1></center></div>'+
 								'<div style="width: 40%; float: left; display: inline">' +
-									'<div id="mo_set_pre_config_app" style="overflow: auto; margin-left:20%; padding-top:2%">' +
-										'<div style="width: 65%; float: left; display: inline"><i class="fa fa-info-circle mo_copytooltip" title="miniOrange take care of creating applications for you so that you don’t have to worry about creating applications in each social network."></i><label style="display: contents;"><b> Pre configured miniOrange App</b></label></div>' +
-										'<div style="width: 35%; float: right; display: inline">' +
-											'<label class="mo-openid-switch-app">' +
-												'<input type="checkbox" id="mo_openid_enable_custom_app" value="1"/>' +
-												'<div class="mo-openid-slider-app round" id="switch_checkbox" ></div>' +
-											'</label>' +
-										'</div>' +
-									'</div>'+
-									'<div id="mo_facebook_notice" style="overflow: auto; margin-left:25%; margin-right:3%; padding-top:2%"><label style="cursor:auto"><b></b></label></div><hr>'+
+									'<div id="mo_facebook_notice" style="overflow: auto; margin-left:5%; margin-right:3%; padding-top:2%"><label style="cursor:auto"><b></b></label></div><hr>'+
 									'<div><center><h3 style="margin-bottom: 2%">App Settings</h3></center></div>'+
 									'<div class="mo-openid-app-name" id="custom_app_name_rename" style="width: 100%">'+
-										'<div id="mo_register_customer_toggle" style="overflow: auto; margin-left:10%; margin-right:3%; padding-top:2%;margin-bottom:2%;">' +
-											'<a href="<?php echo esc_url( add_query_arg( array( 'tab' => 'profile' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">If you don\'t want to set up your own app then register with us and use our pre-configured apps</a>' +
-										'</div>'+
 										'<div style="padding: 0% 5% 5% 5%;">'+
 											'<div style="overflow: auto">' +
 												'<div style="float: left; width: 20%"><b>App ID</b></div>'+
@@ -431,9 +304,14 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 											'<p style="margin-bottom:auto">Have any configuration issues? <a style="cursor: pointer" onclick="mo_openid_support_form(this.id)">Contact Us</a> for help.</p>' +
 											'</center>'+
 											'</div>'+
+											'<div style="margin-top: 10px;">'+
+											'<center>' +
+											'<p style="margin-bottom:auto">Already have (or want) a miniOrange account? <a style="cursor: pointer" id="mo_openid_show_register_form">Register / Login</a></p>' +
+											'</center>'+
+											'</div>'+
 				'<div style="margin-top: 10px;">'+
 				'<center>' +
-				'<p style="margin-bottom:auto">Do you want to use social login icons on any particular theme? Go to <a style="cursor: pointer" href="<?php echo esc_url( add_query_arg( array( 'tab' => 'shortcodes' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">Shortcode Tab</a> .</p>' +
+				'<p style="margin-bottom:auto">Do you want to use social login icons on any particular theme? Go to <a style="cursor: pointer" href="<?php echo esc_url( add_query_arg( array( 'tab' => 'shortcodes' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">Shortcode Tab</a> .</p>' +
 				'</center>'+
 				'</div>'+
 										'</div>'+
@@ -450,7 +328,7 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 									'<div><center><h3 style="color:#FFA335">Register with miniOrange</h3></center></div>'+
 									'<p style="font-size:14px;margin-left:1%"><b>Why should I register? </b></p>'+
 									'<div id="help_register_desc" style="margin-left:1%; margin-right:1%;background: aliceblue; padding: 10px 10px 10px 10px; border-radius: 10px;">' +
-									'By registering with miniOrange we take care of creating applications for you so that you don’t have to worry about creating applications in each social network.' +
+									'Registering with miniOrange gives you a customer account used for license activation, add-ons, and support.' +
 									'<br/><b>Please Note:</b> We do not store any information except the email that you will use to register with us. You can go through our <a href="https://www.miniorange.com/usecases/miniOrange_Privacy_Policy.pdf" target="_blank">Privacy Policy</a> for how we use your information. We don’t sell your information to any third-party organization.' +
 									'</div><br/>'+
 									'<table class="mo_openid_settings_table" style="margin-left:1%; width:95%">' +
@@ -473,7 +351,7 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 											'</td>' +
 										'</tr>' +
 									'</table> '+
-									'<br/>&nbsp;<a style="font-size: medium;" class="mo_do_not_register">Don\'t want to register and set up my own custom app.</a>'+
+									'<br/>&nbsp;<a style="font-size: medium;" class="mo_do_not_register">Close</a>'+
 								'</div>'+
 								'<div id="mo_openid_register_old_user" style="width: 59%; background-color: #d2d4e542; float: right; display: none; height: auto; overflow-y: auto">'+
 								'<div><center><h3 style="color:#FFA335">Login with miniOrange</h3></center></div>'+
@@ -495,7 +373,7 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 								'</td>' +
 								'</tr>' +
 								'</table> '+
-								'<br/>&nbsp;<a style="font-size: medium;" class="mo_do_not_register">Don\'t want to register and set up my own custom app.</a>'+
+								'<br/>&nbsp;<a style="font-size: medium;" class="mo_do_not_register">Close</a>'+
 								'</div>'+
 								'<a class="mo_openid_close-button" popup-close="popup-1" href="javascript:void(0)">Close</a>'+
 							'</div>'+
@@ -532,6 +410,16 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 				jQuery("#new_user_password").val("");
 				jQuery("#new_user_confirmPassword").val("");
 				jQuery('#mo_openid_register_old_user').hide();
+			});
+
+			//open register/login form from the "App Settings" panel
+			jQuery('#mo_openid_show_register_form').click(function () {
+				jQuery('#mo_openid_cust_app_instructions').hide();
+				jQuery('#mo_openid_register_old_user').hide();
+				jQuery('#mo_openid_register_new_user').show();
+				jQuery("#new_user_email").val("");
+				jQuery("#new_user_password").val("");
+				jQuery("#new_user_confirmPassword").val("");
 			});
 
 			//create_new_user
@@ -576,16 +464,7 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 							if(result.success=='Registration complete!'){
 								jQuery('#mo_openid_register_new_user').hide();
 								jQuery('#mo_openid_cust_app_instructions').show();
-								jQuery("#mo_openid_enable_custom_app").prop('checked', true);
-								// jQuery( "#mo_openid_enable_app").prop('checked', true);
-								jQuery("#mo_register_customer_toggle").hide();
-								mo_show_success_error_msg('success','Registration completed & Pre configured app activated');
-								let app_name = jQuery(".mo-openid-app-name").attr("id");
-								var active_button=document.getElementById('mo_openid_'.concat(app_name).concat('_active_div'));
-								active_button.style.display = "block";
-								document.getElementById(app_name).setAttribute("style","opacity:1");
-								jQuery( "#mo_apps_"+app_name).prop('checked', true);
-								enable_default_app_db(app_name, 'true')
+								mo_show_success_error_msg('success','Registration completed');
 							}
 						}
 					});
@@ -653,78 +532,11 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 								jQuery('#mo_openid_register_new_user').hide();
 								jQuery('#mo_openid_register_old_user').hide();
 								jQuery('#mo_openid_cust_app_instructions').show();
-								jQuery("#mo_openid_enable_custom_app").prop('checked', true);
-								// jQuery( "#mo_openid_enable_app").prop('checked', true);
-								jQuery("#mo_register_customer_toggle").hide();
-								mo_show_success_error_msg('success','Your account has been retrieved successfully & Pre configured app activated');
-								let app_name = jQuery(".mo-openid-app-name").attr("id");
-								var active_button=document.getElementById('mo_openid_'.concat(app_name).concat('_active_div'));
-								active_button.style.display = "block";
-								document.getElementById(app_name).setAttribute("style","opacity:1");
-								jQuery( "#mo_apps_"+app_name).prop('checked', true);
-								enable_default_app_db(app_name, 'true')
+								mo_show_success_error_msg('success','Your account has been retrieved successfully');
 							}
 						}
 					});
 				}
-			});
-
-			//mo_openid_enable_custom_app
-			jQuery('#mo_openid_enable_custom_app').click(function () {
-				mo_openid_ajax_wait_openModal();
-				let app_name = jQuery(".mo-openid-app-name").attr("id");
-				let a=document.getElementById('mo_openid_enable_custom_app');
-				let custom_app_enable_change;
-				if(a.checked==true){
-					custom_app_enable_change=1;
-				}
-				else
-					custom_app_enable_change=0;
-					var mo_openid_custom_app_enable_change_update_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-custom-app-enable-change-nonce' ) ); ?>';
-				jQuery.ajax({
-					url:"<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>", //the page containing php script
-					method: "POST", //request type,
-					dataType: 'json',
-					data: {
-						appname: app_name,
-						custom_app_enable_change : custom_app_enable_change,
-						action: 'custom_app_enable_change_update',
-						'mo_openid_custom_app_enable_change_update_nonce' : mo_openid_custom_app_enable_change_update_nonce,
-					},
-					success:function(result){
-						mo_openid_ajax_wait_closeModal();
-						if(result.status=='true'){
-							jQuery("#mo_openid_enable_custom_app").prop('checked', true);
-							// jQuery( "#mo_openid_enable_app").prop('checked', true);
-							mo_show_success_error_msg('success',app_name.charAt(0).toUpperCase()+app_name.substr(1)+(' pre configured app activated'));
-							var active_button=document.getElementById('mo_openid_'.concat(app_name).concat('_active_div'));
-							active_button.style.display = "block";
-							document.getElementById(app_name).setAttribute("style","opacity:1");
-							jQuery( "#mo_apps_"+app_name).prop('checked', true);
-						}
-						else if(result.status=='false')
-						{
-							jQuery( "#mo_openid_enable_custom_app").prop('checked', false);
-							jQuery('#mo_openid_cust_app_instructions').hide();
-							jQuery('#mo_openid_register_new_user').show();
-							jQuery("#new_user_email").val("");
-							jQuery("#new_user_password").val("");
-							jQuery("#new_user_confirmPassword").val("");
-							mo_show_success_error_msg('error','Please register with us to use miniOrange pre configured app');
-							jQuery("#mo_openid_register_new_user").effect("shake");
-						}
-						else if(result.status=="No_cust_app"){
-							//app_name.charAt(0).toUpperCase()+app_name.substr(1)+' is activated sucessfully'
-							mo_show_success_error_msg('success',app_name.charAt(0).toUpperCase()+app_name.substr(1)+(' deactivated sucessfully'));
-							deactivate_app(app_name);
-							jQuery( "#mo_openid_enable_custom_app").prop('checked', false);
-						}
-						else if(result.status=="Turned_Off"){
-							mo_show_success_error_msg('success',app_name.charAt(0).toUpperCase()+app_name.substr(1)+(' custom app activated'));
-							jQuery( "#mo_openid_enable_custom_app").prop('checked', false);
-						}
-					}
-				});
 			});
 
 			// save app id and secret
@@ -872,29 +684,11 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 			{
 				jQuery("#mo_facebook_notice").text("Please set custom app for "+app_name.charAt(0).toUpperCase()+app_name.substr(1));
 				jQuery ("#mo_facebook_notice").show();
-				jQuery( "#mo_register_customer_toggle").hide();
 			}
 			else {
 			   document.getElementById('mo_openid_ajax_wait_img').style.display = 'block';
 				document.getElementById('mo_openid_ajax_wait_fade').style.display = 'block';
 				jQuery ("#mo_facebook_notice").hide();
-				var mo_openid_customer_toggle_update_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-customer-toggle-update-nonce' ) ); ?>';
-				jQuery.ajax({
-					url: "<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>", //the page containing php script
-					method: "POST", //request type,
-					dataType: 'json',
-					data: {
-						action: 'mo_register_customer_toggle_update',
-						'mo_openid_customer_toggle_update_nonce' : mo_openid_customer_toggle_update_nonce,
-					},
-					success: function (result) {
-						// if (result.status) {
-						if (true) {
-							jQuery("#mo_register_customer_toggle").hide();
-						} else
-							jQuery("#mo_register_customer_toggle").show();
-					}
-				});
 			}
 			getappsInLine(app_name);
 		});
@@ -915,13 +709,6 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 			jQuery('#mo_openid_register_new_user').hide();
 			jQuery('#mo_openid_register_old_user').hide();
 			jQuery("#mo_app_config_notice").text("If you face any issues in setting up " + application_name.charAt(0).toUpperCase() + application_name.substr(1) + " app then please contact us we wil help you out");
-			if(application_name == 'facebook' || application_name == 'twitter' || application_name == 'snapchat' || application_name == 'dribbble' || application_name == 'discord') {
-				jQuery("#mo_set_pre_config_app").hide();
-			}
-
-			else {
-				jQuery("#mo_set_pre_config_app").show();
-			}
 			if(application_name == 'facebook' ||  application_name == 'google'||  application_name == 'discord') {
 
 				jQuery("#mo_ssl_notice").text("SSL certificate is required for " + application_name.charAt(0).toUpperCase() + application_name.substr(1) + " custom app");
@@ -930,13 +717,8 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 			else {
 				jQuery("#mo_ssl_notice").hide();
 			}
-			if(application_name == 'salesforce'){
-			   document.getElementById('mo_openid_ajax_wait_img').style.display = 'none';
-				document.getElementById('mo_openid_ajax_wait_fade').style.display = 'none';
-				handle_salesforce();
-			}
-			else if(application_name != null) {
-				var default_color= {'facebook':'#1877F2','google':'#DB4437','vkontakte':'#466482','twitter':'#2795e9','yahoo':'#430297','linkedin':'#007bb6','linkedin_oidc':'#007bb6','salesforce':'#1ab7ea','dribbble':'#ee66aa','snapchat':'#fffc00','discord':"#7289DA"};
+			if(application_name != null) {
+				var default_color= {'facebook':'#1877F2','google':'#DB4437','vkontakte':'#466482','twitter':'#2795e9','yahoo':'#430297','linkedin':'#007bb6','linkedin_oidc':'#007bb6','dribbble':'#ee66aa','snapchat':'#fffc00','discord':"#7289DA"};
 				var icon = application_name ;
 				if(application_name=='vkontakte'){
 					icon= 'vk';
@@ -966,10 +748,6 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 						var ins = data.split("##");
 						jQuery( "#app_id_value").val(ins[1]);
 						jQuery( "#app_secret_value").val(ins[2]);
-						if(ins[3]=="default")
-							jQuery( "#mo_openid_enable_custom_app").prop('checked', true);
-						else
-							jQuery( "#mo_openid_enable_custom_app").prop('checked', false);
 						// if(ins[4]=="1")
 						//     jQuery( "#mo_openid_enable_app").prop('checked', true);
 						// else
@@ -997,57 +775,6 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 			}
 		}
 
-		function handle_salesforce() {
-			var a=document.getElementById('mo_apps_salesforce');
-			var enable_app='mo_openidsalesforce_enable';
-			var active_button=document.getElementById('mo_openid_salesforce_active_div');
-			var mo_openid_customer_toggle_update_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-customer-toggle-update-nonce' ) ); ?>';
-			jQuery.ajax({
-				url:"<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>", //the page containing php script
-				method: "POST", //request type,
-				dataType: 'json',
-				data: {
-					action: 'mo_register_customer_toggle_update',
-					'mo_openid_customer_toggle_update_nonce' : mo_openid_customer_toggle_update_nonce,
-				},
-				success: function(result){
-					// if(result.status){
-					if(true){
-						if(a.checked==false) {
-							document.getElementById('salesforce').setAttribute("style","opacity:1");
-							active_button.style.display = "block";
-							jQuery( "#mo_apps_salesforce").prop('checked', true);
-							mo_show_success_error_msg('success','Salesforce is activated sucessfully');
-						}
-						else {
-							document.getElementById('salesforce').setAttribute("style","opacity:0.6");
-							active_button.style.display = "none";
-							jQuery( "#mo_apps_salesforce").prop('checked', false);
-							mo_show_success_error_msg('success','Salesforce is deactivated sucessfully');
-						}
-						var mo_openid_sso_enable_app_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-sso-enable-app' ) ); ?>';
-						jQuery.ajax({
-							type: 'POST',
-							url: '<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>',
-							data: {
-								'mo_openid_sso_enable_app_nonce': mo_openid_sso_enable_app_nonce,
-								action:'mo_openid_app_enable',
-								app_name:'salesforce',
-								enabled:a.checked,
-							},
-							success: function(data) {
-							},
-							error: function (data){}
-						});
-					}
-					else {
-						var r = confirm('Salesforce do not provide any custom application. Please register with us to use pre configured app. To register click on OK.');
-						if(r)
-							window.location.href="<?php echo esc_url( site_url() ); ?>".concat("/wp-admin/admin.php?page=mo_openid_general_settings&tab=profile");
-					}
-				}
-			});
-		}
 		//to drag and save position of apps
 		var mo_openid_sso_sort_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-sso-sort' ) ); ?>';
 		jQuery( function() {

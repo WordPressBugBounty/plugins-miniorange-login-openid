@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_share_cnt() {
 	?>
 	<form id="share_cnt" name="share_cnt" method="post" action="">
@@ -14,7 +18,7 @@ function mo_openid_share_cnt() {
 				<tr>
 					<td>
 
-						<p class="mo_openid_note_style" style="font-size: 15px;"><?php echo esc_attr( mo_sl( 'Share counts are supported for <b>Facebook</b> If you are Enabling share counts then it will give you the exact counts of share that is done by that particular social media.' ) ); ?><br><br><?php echo esc_attr( mo_sl( ' <b>Vkontakte</b>, <b>Stumble Upon</b>, <b>Buffer</b>, <b>Pinterest</b> and <b>Reddit</b> are supported in Paid Version' ) ); ?>.<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>.</p>
+						<p class="mo_openid_note_style" style="font-size: 15px;"><?php echo esc_attr( mo_sl( 'Share counts are supported for <b>Facebook</b> If you are Enabling share counts then it will give you the exact counts of share that is done by that particular social media.' ) ); ?><br><br><?php echo esc_attr( mo_sl( ' <b>Vkontakte</b>, <b>Stumble Upon</b>, <b>Buffer</b>, <b>Pinterest</b> and <b>Reddit</b> are supported in Paid Version' ) ); ?>.<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>.</p>
 
 						<br>
 						<label class="mo_openid_checkbox_container"> <b style="font-size: 14px;"><?php echo esc_attr( mo_sl( 'Enable share counts' ) ); ?></b>

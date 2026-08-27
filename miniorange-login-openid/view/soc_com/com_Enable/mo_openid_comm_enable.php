@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function select_comment_enable() {
 	?>
 	<div class="mo_openid_table_layout">

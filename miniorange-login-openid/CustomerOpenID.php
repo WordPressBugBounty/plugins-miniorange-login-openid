@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 /** miniOrange enables user to log in through OpenID to apps such as Google, Salesforce etc.
  *
  * @package         miniOrange
@@ -169,7 +173,7 @@ class CustomerOpenID {
 		$subject               = 'MiniOrange Social Login Plugin Feedback : ' . $email;
 		$site_url              = site_url();
 		$activation_date       = get_option( 'mo_openid_user_activation_date1' );
-		$deactivationdate      = date( 'Y-m-d' );
+		$deactivationdate      = gmdate( 'Y-m-d' );
 		$version               = get_option( 'mo_openid_social_login_version' );
 		$store_activation      = strtotime( $activation_date );
 		$store_deactivation    = strtotime( $deactivationdate );
@@ -180,7 +184,7 @@ class CustomerOpenID {
 
 		$query   = ' MiniOrange Social Login [Free] ';
 		$content = '<div >Hello, <br><br>First Name :<br><br>Last  Name :
-								<br><br>Company : ' . sanitize_text_field( $_SERVER['HTTP_HOST'] ) . '
+								<br><br>Company : ' . ( isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '' ) . '
 								<br><br>Phone Number : ' . $phone_number . '
 								<br><br>Email : <a href="mailto:' . $fromEmail . '" target="_blank">' . $fromEmail . '</a>
 								<br><br>Activation time : ' . $activation_date . ' - ' . $deactivationdate . '  [' . $total_activation_days . ']
@@ -287,7 +291,7 @@ class CustomerOpenID {
 	function submit_contact_us( $email, $phone, $query, $feature_plan, $enable_setup_call, $timezone, $date, $time ) {
 		$url          = get_option( 'mo_openid_host_name' ) . '/moas/rest/customer/contact-us';
 		$current_user = wp_get_current_user();
-		$company      = get_option( 'mo_openid_admin_company_name' ) ? get_option( 'mo_openid_admin_company_name' ) : sanitize_text_field( $_SERVER ['SERVER_NAME'] );
+		$company      = get_option( 'mo_openid_admin_company_name' ) ? get_option( 'mo_openid_admin_company_name' ) : ( isset( $_SERVER['SERVER_NAME'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_NAME'] ) ) : '' );
 		$first_name   = get_option( 'mo_openid_admin_first_name' ) ? get_option( 'mo_openid_admin_first_name' ) : $current_user->user_firstname;
 		$last_name    = get_option( 'mo_openid_admin_last_name' ) ? get_option( 'mo_openid_admin_last_name' ) : $current_user->user_lastname;
 		$query        = '[WP OpenID Connect Login Free Plugin Version: ' . get_option( 'mo_openid_social_login_version' ) . '] ' . $feature_plan . ':' . $query;

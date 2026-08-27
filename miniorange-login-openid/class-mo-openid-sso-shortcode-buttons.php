@@ -1,5 +1,51 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Validates a CSS color value from shortcode attributes before it's concatenated into an
+ * inline style="" attribute. esc_attr() only HTML-encodes & " ' < > -- it does nothing to CSS
+ * metacharacters like ; : ( ), so a raw shortcode attribute (colour/backgroundcolor/fontcolor)
+ * could otherwise inject arbitrary additional CSS declarations into every visitor's page. Only
+ * a bare hex color (#abc, #aabbcc, #aabbccdd, with or without the leading #) or a plain
+ * alphabetic CSS color keyword (red, transparent, ...) is accepted; anything else -- including
+ * any of the CSS metacharacters above -- falls back to $default.
+ *
+ * @param string $value   Raw shortcode attribute (or stored option) value.
+ * @param string $default Fallback when $value doesn't validate.
+ * @return string
+ */
+function mo_openid_sanitize_css_color( $value, $default ) {
+	$value = trim( (string) $value );
+	if ( '' === $value ) {
+		return $default;
+	}
+	$hex = ltrim( $value, '#' );
+	if ( preg_match( '/^(?:[0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/', $hex ) ) {
+		return '#' . $hex;
+	}
+	if ( preg_match( '/^[A-Za-z]+$/', $value ) ) {
+		return strtolower( $value );
+	}
+	return $default;
+}
+
+/**
+ * Validates a shortcode-supplied share URL against this site's own origin, the same way
+ * wp_safe_redirect()/wp_validate_redirect() do -- the `url` attribute otherwise lets any
+ * Author-or-above post an arbitrary external destination that gets embedded into every share
+ * link (and, via CSS background:url() in the offset/size attributes elsewhere in this file,
+ * could double as a per-visitor tracking beacon).
+ *
+ * @param string $value Raw shortcode attribute value.
+ * @return string
+ */
+function mo_openid_sanitize_share_url( $value ) {
+	return esc_url( wp_validate_redirect( $value, get_site_url() ) );
+}
+
 function count_convert( $count ) {
 	if ( $count >= 1000000 ) {
 		$count = $count / 1000000;
@@ -13,24 +59,30 @@ function count_convert( $count ) {
 
 // shortcode for horizontal sharing
 function mo_openid_share_shortcode( $atts = '', $title = '', $excerpt = '' ) {
-	wp_enqueue_style( 'mo-wp-style-icon', plugins_url( 'includes/css/mo_openid_login_icons.css?version=' . MO_OPENID_SOCIAL_LOGIN_VERSION, __FILE__ ), false );
+	wp_enqueue_style( 'mo-wp-style-icon', plugins_url( 'includes/css/mo_openid_login_icons.css?version=' . MO_OPENID_SOCIAL_LOGIN_VERSION, __FILE__ ), false, MO_OPENID_SOCIAL_LOGIN_VERSION );
 	if ( get_option( 'mo_openid_fonawesome_load' ) == 1 ) {
-		wp_enqueue_style( 'mo-openid-sl-wp-font-awesome', plugins_url( 'includes/css/mo-font-awesome.min.css', __FILE__ ), false );
+		wp_enqueue_style( 'mo-openid-sl-wp-font-awesome', plugins_url( 'includes/css/mo-font-awesome.min.css', __FILE__ ), false, MO_OPENID_SOCIAL_LOGIN_VERSION );
 	}
-	wp_enqueue_style( 'mo_openid_admin_settings_style', plugins_url( 'includes/css/mo_openid_style.css?version=' . MO_OPENID_SOCIAL_LOGIN_VERSION, __FILE__ ) );
+	wp_enqueue_style( 'mo_openid_admin_settings_style', plugins_url( 'includes/css/mo_openid_style.css?version=' . MO_OPENID_SOCIAL_LOGIN_VERSION, __FILE__ ), array(), MO_OPENID_SOCIAL_LOGIN_VERSION );
 
 	$html               = '';
 	$selected_theme     = isset( $atts['shape'] ) ? esc_attr( $atts['shape'] ) : esc_attr( get_option( 'mo_openid_share_theme' ) );
 	$selected_direction = esc_attr( get_option( 'mo_openid_share_widget_customize_direction' ) );
-	$sharingSize        = isset( $atts['size'] ) ? esc_attr( $atts['size'] ) : esc_attr( get_option( 'mo_sharing_icon_custom_size' ) );
-	$custom_color       = isset( $atts['backgroundcolor'] ) ? esc_attr( $atts['backgroundcolor'] ) : esc_attr( get_option( 'mo_sharing_icon_custom_color' ) );
+	// size/space feed directly into style="...px" below (and into arithmetic like
+	// $sharingSize - 16), so they're cast to plain integers -- esc_attr() alone would leave a
+	// value like "20;position:fixed;..." intact and inject extra CSS declarations.
+	$sharingSize        = isset( $atts['size'] ) ? (int) $atts['size'] : (int) get_option( 'mo_sharing_icon_custom_size' );
+	$custom_color       = mo_openid_sanitize_css_color( isset( $atts['backgroundcolor'] ) ? $atts['backgroundcolor'] : get_option( 'mo_sharing_icon_custom_color' ), '2B41FF' );
 	$custom_theme       = isset( $atts['theme'] ) ? esc_attr( $atts['theme'] ) : esc_attr( get_option( 'mo_openid_share_custom_theme' ) );
-	$fontColor          = isset( $atts['fontcolor'] ) ? esc_attr( $atts['fontcolor'] ) : esc_attr( get_option( 'mo_sharing_icon_custom_font' ) );
-	$spaceBetweenIcons  = isset( $atts['space'] ) ? esc_attr( $atts['space'] ) : esc_attr( get_option( 'mo_sharing_icon_space' ) );
-	$textColor          = isset( $atts['color'] ) ? esc_attr( $atts['color'] ) : '#' . esc_attr( get_option( 'mo_openid_share_widget_customize_text_color' ) );
+	$fontColor          = mo_openid_sanitize_css_color( isset( $atts['fontcolor'] ) ? $atts['fontcolor'] : get_option( 'mo_sharing_icon_custom_font' ), '000000' );
+	$spaceBetweenIcons  = isset( $atts['space'] ) ? (int) $atts['space'] : (int) get_option( 'mo_sharing_icon_space' );
+	$textColor          = mo_openid_sanitize_css_color( isset( $atts['color'] ) ? $atts['color'] : get_option( 'mo_openid_share_widget_customize_text_color' ), '000000' );
 	$text               = isset( $atts['heading'] ) ? esc_attr( $atts ['heading'] ) : esc_attr( get_option( 'mo_openid_share_widget_customize_text' ) );
 	$twitter_username   = get_option( 'mo_openid_share_twitter_username' );
-	$url                = isset( $atts['url'] ) ? esc_url( $atts['url'] ) : esc_url( get_site_url() );
+	// Pin the `url` attribute to this site's own origin -- otherwise any Author-or-above can
+	// point every share link (and the mailto/CSS-driven bits below) at an arbitrary external
+	// destination for click-hijacking or a per-visitor tracking beacon.
+	$url                = isset( $atts['url'] ) ? mo_openid_sanitize_share_url( $atts['url'] ) : esc_url( get_site_url() );
 	$title              = ! empty( $title ) ? $title : str_replace( '+', '%20', urlencode( get_the_title() ) );
 	$excerpt            = str_replace( '+', '%20', urlencode( $excerpt ) );
 	$sharing_counts     = esc_attr( get_option( 'mo_openid_share_count' ) );
@@ -86,14 +138,6 @@ function mo_openid_share_shortcode( $atts = '', $title = '', $excerpt = '' ) {
 		'buffer'           => array( '#000000' => 'https://buffer.com/add?url=' . $url . '&title=' . $title ),
 	);
 
-	if ( $fontColor ) {
-		if ( ctype_xdigit( $fontColor ) && strlen( $fontColor ) == 6 && strpos( $fontColor, '#' ) == false ) {
-			$fontColor = '#' . $fontColor;
-		} else {
-			$fontColor;
-		}
-	}
-
 	$html .= '<div class="mo-openid-app-icons circle ">';
 
 	$html .= '<p style="margin-top:4% !important; margin-bottom:0px !important; color:' . $textColor . '">';
@@ -126,7 +170,7 @@ function mo_openid_share_shortcode( $atts = '', $title = '', $excerpt = '' ) {
 					if ( get_option( 'mo_openid_' . $share_app . '_share_enable' ) ) {
 						if ( $sharing_counts ) {
 							$html .= '<li>';
-						} $html .= "<a rel='nofollow' title='Twitter' onclick=\"popupCenter('" . esc_js( $share_link ) . "', 800, 500);\" class='mo-openid-share-link' style='margin-left : " . ( $spaceBetweenIcons ) . "px !important'><i class='mo-custom-share-icon " . $selected_theme . ' ' . $share_icon . "' style='padding-top:8px;text-align:center;color:#ffffff;font-size:" . ( $sharingSize - 16 ) . 'px !important;background-color:#' . $custom_color . ';height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
+						} $html .= "<a rel='nofollow' title='Twitter' onclick=\"popupCenter('" . esc_js( $share_link ) . "', 800, 500);\" class='mo-openid-share-link' style='margin-left : " . ( $spaceBetweenIcons ) . "px !important'><i class='mo-custom-share-icon " . $selected_theme . ' ' . $share_icon . "' style='padding-top:8px;text-align:center;color:#ffffff;font-size:" . ( $sharingSize - 16 ) . 'px !important;background-color:' . $custom_color . ';height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
 						if ( $sharing_counts ) {
 							$html .= "<span2 style='margin-left : " . ( $spaceBetweenIcons ) . "px !important'></span2></li>";
 						};
@@ -237,26 +281,36 @@ function mo_openid_share_shortcode( $atts = '', $title = '', $excerpt = '' ) {
 }
 
 function mo_openid_vertical_share_shortcode( $atts = '', $title = '', $excerpt = '' ) {
-	wp_enqueue_style( 'mo-wp-style-icon', plugins_url( 'includes/css/mo_openid_login_icons.css?version=' . MO_OPENID_SOCIAL_LOGIN_VERSION, __FILE__ ), false );
+	wp_enqueue_style( 'mo-wp-style-icon', plugins_url( 'includes/css/mo_openid_login_icons.css?version=' . MO_OPENID_SOCIAL_LOGIN_VERSION, __FILE__ ), false, MO_OPENID_SOCIAL_LOGIN_VERSION );
 	if ( get_option( 'mo_openid_fonawesome_load' ) == 1 ) {
-		wp_enqueue_style( 'mo-openid-sl-wp-font-awesome', plugins_url( 'includes/css/mo-font-awesome.min.css', __FILE__ ), false );
+		wp_enqueue_style( 'mo-openid-sl-wp-font-awesome', plugins_url( 'includes/css/mo-font-awesome.min.css', __FILE__ ), false, MO_OPENID_SOCIAL_LOGIN_VERSION );
 	}
-	wp_enqueue_style( 'mo_openid_admin_settings_style', plugins_url( 'includes/css/mo_openid_style.css?version=' . MO_OPENID_SOCIAL_LOGIN_VERSION, __FILE__ ) );
+	wp_enqueue_style( 'mo_openid_admin_settings_style', plugins_url( 'includes/css/mo_openid_style.css?version=' . MO_OPENID_SOCIAL_LOGIN_VERSION, __FILE__ ), array(), MO_OPENID_SOCIAL_LOGIN_VERSION );
 
 	$html               = '';
 	$selected_theme     = isset( $atts['shape'] ) ? esc_attr( $atts['shape'] ) : esc_attr( get_option( 'mo_openid_share_theme' ) );
 	$selected_direction = esc_attr( get_option( 'mo_openid_share_widget_customize_direction' ) );
-	$sharingSize        = isset( $atts['size'] ) ? esc_attr( $atts['size'] ) : esc_attr( get_option( 'mo_sharing_icon_custom_size' ) );
-	$custom_color       = isset( $atts['backgroundcolor'] ) ? esc_attr( $atts['backgroundcolor'] ) : esc_attr( get_option( 'mo_sharing_icon_custom_color' ) );
+	// size/space/offsets feed directly into style="...px" below (and, for size, into
+	// arithmetic like $sharingSize - 16), so they're cast to plain integers -- esc_attr() alone
+	// would leave a value like "20;position:fixed;..." intact and inject extra CSS
+	// declarations. $alignment is whitelisted to exactly left|right: besides being concatenated
+	// into that same style attribute, it's also used below as a variable-variable
+	// (${$alignment . '_offset'}), so constraining it here keeps that lookup bounded to
+	// $left_offset/$right_offset only.
+	$sharingSize        = isset( $atts['size'] ) ? (int) $atts['size'] : (int) get_option( 'mo_sharing_icon_custom_size' );
+	$custom_color       = mo_openid_sanitize_css_color( isset( $atts['backgroundcolor'] ) ? $atts['backgroundcolor'] : get_option( 'mo_sharing_icon_custom_color' ), '2B41FF' );
 	$custom_theme       = isset( $atts['theme'] ) ? esc_attr( $atts['theme'] ) : esc_attr( get_option( 'mo_openid_share_custom_theme' ) );
-	$fontColor          = isset( $atts['fontcolor'] ) ? esc_attr( $atts['fontcolor'] ) : esc_attr( get_option( 'mo_sharing_icon_custom_font' ) );
-	$spaceBetweenIcons  = isset( $atts['space'] ) ? esc_attr( $atts['space'] ) : '10';
-	$alignment          = isset( $atts['alignment'] ) ? esc_attr( $atts['alignment'] ) : 'left';
-	$left_offset        = isset( $atts['leftoffset'] ) ? esc_attr( $atts['leftoffset'] ) : '20';
-	$right_offset       = isset( $atts['rightoffset'] ) ? esc_attr( $atts['rightoffset'] ) : '10';
-	$top_offset         = isset( $atts['topoffset'] ) ? esc_attr( $atts['topoffset'] ) : '100';
+	$fontColor          = mo_openid_sanitize_css_color( isset( $atts['fontcolor'] ) ? $atts['fontcolor'] : get_option( 'mo_sharing_icon_custom_font' ), '000000' );
+	$spaceBetweenIcons  = isset( $atts['space'] ) ? (int) $atts['space'] : 10;
+	$alignment          = ( isset( $atts['alignment'] ) && 'right' === strtolower( trim( $atts['alignment'] ) ) ) ? 'right' : 'left';
+	$left_offset        = isset( $atts['leftoffset'] ) ? (int) $atts['leftoffset'] : 20;
+	$right_offset       = isset( $atts['rightoffset'] ) ? (int) $atts['rightoffset'] : 10;
+	$top_offset         = isset( $atts['topoffset'] ) ? (int) $atts['topoffset'] : 100;
 	$twitter_username   = esc_attr( get_option( 'mo_openid_share_twitter_username' ) );
-	$url                = isset( $atts['url'] ) ? esc_url( $atts['url'] ) : esc_url( get_site_url() );
+	// Pin the `url` attribute to this site's own origin -- otherwise any Author-or-above can
+	// point every share link (and the mailto/CSS-driven bits below) at an arbitrary external
+	// destination for click-hijacking or a per-visitor tracking beacon.
+	$url                = isset( $atts['url'] ) ? mo_openid_sanitize_share_url( $atts['url'] ) : esc_url( get_site_url() );
 	$email_subject      = esc_attr( get_option( 'mo_openid_share_email_subject' ) );
 	// URL-encode title for share query strings. esc_attr() alone is unsafe in
 	// inline onclick handlers: browsers decode &quot; before compiling JS.
@@ -340,7 +394,7 @@ function mo_openid_vertical_share_shortcode( $atts = '', $title = '', $excerpt =
 					$share_icon = 'fas fa-print ';
 				}
 				if ( get_option( 'mo_openid_' . $share_app . '_share_enable' ) ) {
-					$html .= "<a rel='nofollow' title='" . $share_app . "' onclick=\"popupCenter('" . esc_js( $share_link ) . "', 1000, 500);\" class='mo-openid-share-link' style='margin-bottom : " . $spaceBetweenIcons . "px !important'><i class='mo-custom-share-icon " . $selected_theme . ' ' . $share_icon . "' style='margin-bottom : " . ( $spaceBetweenIcons - 4 ) . 'px !important;padding-top:8px;text-align:center;color:#ffffff;font-size:' . ( $sharingSize - 16 ) . 'px !important;background-color:#' . $custom_color . ';height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
+					$html .= "<a rel='nofollow' title='" . $share_app . "' onclick=\"popupCenter('" . esc_js( $share_link ) . "', 1000, 500);\" class='mo-openid-share-link' style='margin-bottom : " . $spaceBetweenIcons . "px !important'><i class='mo-custom-share-icon " . $selected_theme . ' ' . $share_icon . "' style='margin-bottom : " . ( $spaceBetweenIcons - 4 ) . 'px !important;padding-top:8px;text-align:center;color:#ffffff;font-size:' . ( $sharingSize - 16 ) . 'px !important;background-color:' . $custom_color . ';height:' . $sharingSize . 'px !important;width:' . $sharingSize . "px !important;'></i></a>";
 				}
 			}
 		}

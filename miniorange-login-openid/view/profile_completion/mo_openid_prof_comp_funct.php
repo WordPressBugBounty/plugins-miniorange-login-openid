@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_save_profile_completion_form( $username, $user_email, $first_name, $last_name, $user_full_name, $user_url, $user_picture, $decrypted_app_name, $decrypted_user_id ) {
 	$allowed_html = array(
 		'style' => array(),
@@ -50,9 +54,21 @@ function mo_openid_save_profile_completion_form( $username, $user_email, $first_
 		if ( empty( $user_email ) ) {
 			$email_user_id = null;
 		} else {
-			$email_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_email = %s", $user_email ) );
+			$mo_cache_key   = mo_openid_cache_key( 'wp_user_id_by_email:' . $user_email );
+			$mo_cache_found = false;
+			$email_user_id  = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+			if ( false === $mo_cache_found ) {
+				$email_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_email = %s", $user_email ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- checking wp_users for an existing email; cached below via wp_cache_set().
+				wp_cache_set( $mo_cache_key, $email_user_id, MO_OPENID_CACHE_GROUP, 60 );
+			}
 		}
-		$username_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_login = %s", $username ) );
+		$mo_cache_key      = mo_openid_cache_key( 'wp_user_id_by_login:' . $username );
+		$mo_cache_found    = false;
+		$username_user_id  = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+		if ( false === $mo_cache_found ) {
+			$username_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_login = %s", $username ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- checking wp_users for an existing login; cached below via wp_cache_set().
+			wp_cache_set( $mo_cache_key, $username_user_id, MO_OPENID_CACHE_GROUP, 60 );
+		}
 
 		// if email exists, dont check if username is in db or not, send otp and get it over WordPress
 		if ( isset( $email_user_id ) ) {
@@ -104,6 +120,7 @@ function mo_openid_validate_otp_form( $username, $user_email, $user_picture, $us
 		$message = get_option( 'mo_email_verify_wrong_otp' );
 	}
 
+	// phpcs:disable WordPress.WP.EnqueuedResources.NonEnqueuedStylesheet -- this builds a standalone HTML document string (its own <head>) for a raw popup, not part of the normal wp_head()/wp_footer() page render, so wp_enqueue_style() has no effect here.
 	$html = '<style>
                             .mocomp {
                                          margin: auto !important;
@@ -224,7 +241,7 @@ function validate_otp_token( $otpToken, $email ) {
 
 	// Expiry check first: wipe state and return immediately so stale tokens cannot
 	// be submitted, and the attempt counter does not carry over to a fresh OTP.
-	if ( ! checkTimeStamp( $_SESSION['sent_on'], current_time( 'timestamp' ) ) ) {
+	if ( ! isset( $_SESSION['sent_on'] ) || ! checkTimeStamp( (int) $_SESSION['sent_on'], current_time( 'timestamp' ) ) ) {
 		unset( $_SESSION['mo_otptoken'], $_SESSION['mo_openid_otp_value'], $_SESSION['mo_otp_email'], $_SESSION['mo_otp_attempts'], $_SESSION['sent_on'] );
 		return array( 'status' => 'FAILURE' );
 	}
@@ -238,7 +255,7 @@ function validate_otp_token( $otpToken, $email ) {
 		return array( 'status' => 'SUCCESS' );
 	}
 
-	$_SESSION['mo_otp_attempts']++;
+	$_SESSION['mo_otp_attempts'] = (int) $_SESSION['mo_otp_attempts'] + 1;
 	return array( 'status' => 'FAILURE' );
 }
 
@@ -310,11 +327,23 @@ function mo_openid_social_login_validate_otp( $username, $user_email, $first_nam
 		);
 		// check_existing_user
 		global $wpdb;
-		$email_user_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_email = %s', $user_email ) );
+		$mo_cache_key   = mo_openid_cache_key( 'linked_user_by_email:' . $user_email );
+		$mo_cache_found = false;
+		$email_user_id  = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+		if ( false === $mo_cache_found ) {
+			$email_user_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_email = %s', $user_email ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- custom plugin table; cached below via wp_cache_set().
+			wp_cache_set( $mo_cache_key, $email_user_id, MO_OPENID_CACHE_GROUP, 60 );
+		}
 		if ( empty( $user_email ) ) {
 			$existing_email_user_id = null;
 		} else {
-			$existing_email_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_email = %s", $user_email ) );
+			$mo_cache_key           = mo_openid_cache_key( 'wp_user_id_by_email:' . $user_email );
+			$mo_cache_found         = false;
+			$existing_email_user_id = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+			if ( false === $mo_cache_found ) {
+				$existing_email_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_email = %s", $user_email ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- checking wp_users for an existing email; cached below via wp_cache_set().
+				wp_cache_set( $mo_cache_key, $existing_email_user_id, MO_OPENID_CACHE_GROUP, 60 );
+			}
 		}
 		if ( ( isset( $email_user_id ) ) || ( isset( $existing_email_user_id ) ) ) {
 
@@ -336,12 +365,12 @@ function mo_openid_social_login_validate_otp( $username, $user_email, $first_nam
 
 function mo_openid_profile_comp_action() {
 
-	$nonce = sanitize_text_field( $_POST['mo_openid_profile_comp_nonce'] );
+	$nonce = isset( $_POST['mo_openid_profile_comp_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_profile_comp_nonce'] ) ) : '';
 	if ( ! wp_verify_nonce( $nonce, 'mo-openid-profile-comp' ) ) {
 		wp_die( '<strong>ERROR WPSL45</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 	} else {
 		if ( current_user_can( 'administrator' ) ) {
-			if ( sanitize_text_field( $_POST['enabled'] ) == 'true' ) {
+			if ( ( isset( $_POST['enabled'] ) ? sanitize_text_field( wp_unslash( $_POST['enabled'] ) ) : '' ) === 'true' ) {
 				update_option( 'mo_openid_enable_profile_completion', 1 );
 
 			} else {

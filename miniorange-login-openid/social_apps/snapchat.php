@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 
 class mo_snapchat {
 
@@ -7,6 +11,7 @@ class mo_snapchat {
 	public $scope = 'snapchat-marketing-api';
 	// public $video_url="https://www.youtube.com/embed/yMjufls41dg";
 	public $instructions;
+	public $site_url;
 	public function __construct() {
 		$this->site_url     = get_option( 'siteurl' );
 		$this->instructions = "Go to <a href=\"https://business.snapchat.com/\" target=\"_blank\">https://business.snapchat.com/</a> and sign in with your snapchat developer account. ##On the page, Click on the Business Details on left panel. ## below their is option of OAuth Apps. Click on <b>OAuth App</b> button ##On Create OAuth App page. Enter your <b>App Name</b>. ##Enter <b><code id='78'>" . mo_get_permalink( 'snapchat' ) . "</code><i style= \"width: 11px;height: 9px;padding-left:2px;padding-top:3px\" class=\"far fa-fw fa-lg fa-copy mo_copy mo_copytooltip\" onclick=\"copyToClipboard(this, '#78', '#shortcode_url12_copy')\"><span id=\"shortcode_url12_copy\" class=\"mo_copytooltiptext\">Copy to Clipboard</span></i></b> in the <strong>Snap Redirect URI</strong>##  Copy the Snap Client ID as Client Id and Snapchat Client Secret as Client Secret from the Create OAuth App settings and Paste them into the fields above. ##Click on the Save settings button.##Go to Social Login tab to configure the display as well as other login settings";
@@ -20,7 +25,7 @@ class mo_snapchat {
 		$_SESSION['appname'] = 'snapchat';
 		$client_id           = $appslist['snapchat']['clientid'];
 		$scope               = $appslist['snapchat']['scope'];
-		$login_dialog_url    = 'https://accounts.snapchat.com/login/oauth2/authorize?client_id=' . $client_id . '&redirect_uri=' . $social_app_redirect_uri . '&response_type=code&scope=' . $scope . '&state=kdfjsn';
+		$login_dialog_url    = 'https://accounts.snapchat.com/login/oauth2/authorize?client_id=' . $client_id . '&redirect_uri=' . $social_app_redirect_uri . '&response_type=code&scope=' . $scope . '&state=' . rawurlencode( mo_openid_get_current_oauth_state() );
 		header( 'Location:' . $login_dialog_url );
 		exit;
 	}

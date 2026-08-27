@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_openid_mailchimp_add_on() {  ?>
 	<script>
 		//to set heading name

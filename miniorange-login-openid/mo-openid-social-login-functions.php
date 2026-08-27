@@ -1,4 +1,45 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Object-cache group used for all of the lookups cached via
+ * wp_cache_get()/wp_cache_set() throughout this plugin -- see
+ * mo_openid_cache_key() and mo_openid_cache_flush_query() below.
+ */
+define( 'MO_OPENID_CACHE_GROUP', 'mo_openid_login_openid' );
+
+/**
+ * Builds the object-cache key for a human readable, uniquely identifying
+ * raw key. Kept as a single function so every call site and
+ * mo_openid_cache_flush_query() always agree on the same key.
+ *
+ * Each call site performs its own wp_cache_get()/wp_cache_set() around the
+ * direct $wpdb lookup (rather than going through a shared helper) so that
+ * WordPress.DB.DirectDatabaseQuery.NoCaching -- which looks for those calls
+ * in the same scope as the query -- can see them.
+ *
+ * @param string $raw_key Human readable key, e.g. 'wp_user_id_by_login:john'.
+ * @return string
+ */
+function mo_openid_cache_key( $raw_key ) {
+	return 'mo_openid_' . md5( $raw_key );
+}
+
+/**
+ * Invalidates the cached lookups primed at each call site (keyed via
+ * mo_openid_cache_key()) for the given raw (pre-hash) keys. Call this after
+ * any insert/update/delete that can change what those lookups would return.
+ *
+ * @param string[] $raw_keys Raw key strings, same ones passed to mo_openid_cache_key().
+ */
+function mo_openid_cache_flush_query( $raw_keys ) {
+	foreach ( (array) $raw_keys as $raw_key ) {
+		wp_cache_delete( mo_openid_cache_key( $raw_key ), MO_OPENID_CACHE_GROUP );
+	}
+}
 require 'social_apps/mo_openid_configured_apps_funct.php';
 
 function mo_openid_start_session() {
@@ -10,30 +51,6 @@ function mo_openid_start_session() {
 function mo_openid_end_session() {
 	session_start();
 	session_unset(); // unsets all session variables
-}
-
-function mo_openid_initialize_social_login() {
-	$client_name = 'wordpress';
-	$appname     = sanitize_text_field( $_REQUEST['app_name'] ); // phpcs:ignore 
-	if ( $appname == 'yaahoo' ) {
-		$appname = 'yahoo';
-	}
-	$timestamp       = round( microtime( true ) * 1000 );
-	$api_key         = get_option( 'mo_openid_admin_api_key' );
-	$token           = $client_name . ':' . number_format( $timestamp, 0, '', '' ) . ':' . $api_key;
-	$customer_token  = get_option( 'mo_openid_customer_token' );
-	$encrypted_token = encrypt_data( $token, $customer_token );
-	$encoded_token   = urlencode( $encrypted_token );
-	$userdata        = get_option( 'moopenid_user_attributes' ) ? 'true' : 'false';
-	$http            = isset( $_SERVER['HTTPS'] ) && ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] != 'off' ? 'https://' : 'http://';
-	$parts           = parse_url( $http . sanitize_text_field( $_SERVER['HTTP_HOST'] ) . sanitize_text_field($_SERVER['REQUEST_URI']) );
-	parse_str( $parts['query'], $query );
-	$post            = isset( $query['p'] ) ? '?p=' . $query['p'] : '';
-	$base_return_url = $http . sanitize_text_field( $_SERVER['HTTP_HOST'] ) . strtok( sanitize_text_field($_SERVER['REQUEST_URI']), '?' ) . $post;
-	$return_url      = strpos( $base_return_url, '?' ) !== false ? urlencode( $base_return_url . '&option=moopenid' ) : urlencode( $base_return_url . '?option=moopenid' );
-	$url             = 'https://login.xecurify.com/moas/openid-connect/client-app/authenticate?token=' . $encoded_token . '&userdata=' . $userdata . '&id=' . get_option( 'mo_openid_admin_customer_key' ) . '&encrypted=true&app=' . $appname . '_oauth_xecurify&returnurl=' . $return_url . '&encrypt_response=true';
-	wp_redirect( $url ); //phpcs:ignore WordPress.Security.SafeRedirect.wp_redirect_wp_redirect --Redirect to the miniorange link to intiate the pre-configured application.
-	exit;
 }
 
 /**
@@ -77,7 +94,6 @@ function mo_openid_get_allowed_social_apps() {
         'qq',
         'reddit',
         'renren',
-        'salesforce',
         'slack',
         'snapchat',
         'spotify',
@@ -114,6 +130,28 @@ function mo_openid_validate_social_app($appname) {
     return in_array(strtolower($appname), $allowed_apps);
 }
 
+/**
+ * Confirms the admin has actually saved client credentials for a whitelisted app, wp_die()ing
+ * with a clear message otherwise.
+ *
+ * Being in mo_openid_get_allowed_social_apps() only means this plugin knows how to talk to a
+ * provider -- it doesn't mean the admin has configured it. Every social_apps/*.php file reads
+ * $appslist[$appname]['clientid']/['clientsecret'] with no isset() guard, so reaching either
+ * dispatch point below for a recognized-but-unconfigured app (e.g. hitting the oauthredirect
+ * URL directly for a provider whose login button was never enabled) threw "Undefined array
+ * key"/"Trying to access array offset on value of type null" warnings that print the server's
+ * absolute file path into the response. Checking once here, before any provider file is
+ * reached, fixes that for every provider instead of patching each file individually.
+ *
+ * @param string $appname Whitelisted social app slug (already normalized, e.g. yaahoo -> yahoo).
+ */
+function mo_openid_require_configured_app( $appname ) {
+	$appslist = maybe_unserialize( get_option( 'mo_openid_apps_list' ) );
+	if ( empty( $appslist[ $appname ]['clientid'] ) || empty( $appslist[ $appname ]['clientsecret'] ) ) {
+		wp_die( esc_html__( 'This social login app has not been configured yet. Please contact the site administrator.', 'miniorange-login-openid' ) );
+	}
+}
+
 function mo_openid_custom_app_oauth_redirect( $appname ) {
 	if ( ! mo_openid_validate_social_app( $appname ) ) {
 		wp_die( esc_html__( 'Invalid social app specified.', 'miniorange-login-openid' ) );
@@ -127,12 +165,88 @@ function mo_openid_custom_app_oauth_redirect( $appname ) {
 	if ( $appname == 'yaahoo' ) {
 		$appname = 'yahoo';
 	}
+	mo_openid_require_configured_app( $appname );
 	require 'social_apps/' . $appname . '.php';
 	$mo_appname = 'mo_' . $appname;
 	$social_app = new $mo_appname();
 	mo_openid_start_session();
-	$_SESSION['mo_openid_state'] = wp_generate_password( 32, false, false );
+	// Every social_apps/*.php file that builds a provider authorize URL must send this
+	// value back as its `state` parameter (via mo_openid_get_current_oauth_state()) so the
+	// callback can confirm the provider actually echoed back what this site issued -- see
+	// mo_openid_process_custom_app_callback(), which treats a missing/empty state on either
+	// side as an automatic reject, never a pass.
+	$_SESSION['mo_openid_state'] = mo_openid_generate_oauth_state( $appname );
 	$social_app->mo_openid_get_app_code();
+}
+
+/**
+ * Generates a cryptographically random, single-use OAuth `state` value for the in-flight
+ * social login redirect, per the CSRF-prevention guidance in RFC 6749 SS10.12 / RFC 9700 SS4.7.
+ *
+ * The value is opaque and always non-empty: mo_openid_process_custom_app_callback() compares
+ * it with hash_equals() against whatever the provider echoes back in its callback -- after
+ * first requiring both sides be non-empty, since hash_equals('', '') is true and an empty
+ * state must never be treated as a valid one -- and discards it from the session either way,
+ * so it can never be replayed. It packs a random nonce, the issuing timestamp, a hash of the
+ * requesting IP, and the target app -- as raw bytes, base64url-encoded without padding --
+ * purely for entropy/context; the actual security guarantee comes from the random nonce and
+ * the hash_equals() compare in the callback, not from this structure. Several providers
+ * (e.g. LinkedIn, Snapchat) cap `state` length, so this is kept compact: ~50-60 characters
+ * regardless of app name, vs. the 200+ a hex/JSON encoding of the same fields would cost.
+ *
+ * @param string $appname Social app slug this state is being generated for.
+ * @return string
+ */
+function mo_openid_generate_oauth_state( $appname ) {
+	$nonce_hash = substr( hash( 'sha256', mo_openid_random_nonce_bytes(), true ), 0, 16 ); // 128-bit, raw binary.
+	$timestamp  = pack( 'N', time() ); // 4 bytes, seconds since epoch.
+	$ip_hash    = substr( hash( 'sha256', mo_openid_get_request_ip(), true ), 0, 8 ); // 64-bit, raw binary.
+	$appname    = substr( sanitize_text_field( $appname ), 0, 20 );
+	$raw_state  = $nonce_hash . $timestamp . $ip_hash . $appname;
+	return rtrim( strtr( base64_encode( $raw_state ), '+/', '-_' ), '=' ); // URL-safe, no padding.
+}
+
+/**
+ * Cryptographically secure random bytes, used only as raw entropy for
+ * mo_openid_generate_oauth_state(). Falls back to a hash of wp_generate_password() if
+ * random_bytes() is unavailable or fails (older PHP builds without a CSPRNG source
+ * configured).
+ *
+ * @return string 16 raw bytes.
+ */
+function mo_openid_random_nonce_bytes() {
+	if ( function_exists( 'random_bytes' ) ) {
+		try {
+			return random_bytes( 16 );
+		} catch ( Exception $e ) {
+			// fall through to the fallback below.
+		}
+	}
+	return substr( hash( 'sha256', wp_generate_password( 64, false, false ), true ), 0, 16 );
+}
+
+/**
+ * Client IP used to bind mo_openid_generate_oauth_state(). Deliberately reads only
+ * REMOTE_ADDR -- populated by the webserver from the actual TCP peer -- and never a
+ * client-suppliable header such as X-Forwarded-For/X-Real-IP, which an attacker could
+ * otherwise spoof to control the resulting hash.
+ *
+ * @return string
+ */
+function mo_openid_get_request_ip() {
+	return isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '';
+}
+
+/**
+ * Returns the OAuth state armed for the in-flight redirect (see
+ * mo_openid_generate_oauth_state()) so a social_apps/*.php file can append it to the
+ * provider's authorize URL as the `state` parameter.
+ *
+ * @return string
+ */
+function mo_openid_get_current_oauth_state() {
+	mo_openid_start_session();
+	return isset( $_SESSION['mo_openid_state'] ) ? $_SESSION['mo_openid_state'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- this session value is generated exclusively by mo_openid_generate_oauth_state() (see there), never taken from request input, so there is nothing here to sanitize.
 }
 
 function mo_openid_process_custom_app_callback() {
@@ -144,37 +258,56 @@ function mo_openid_process_custom_app_callback() {
 	$code               = $profile_url = $client_id = $current_url = $client_secret = $access_token_uri = $postData = $oauth_token = $user_url = $user_name = $email = '';
 	$oauth_access_token = $redirect_url = $option = $oauth_token_secret = $screen_name = $profile_json_output = $oauth_verifier = $twitter_oauth_token = $access_token_json_output = array();
 	mo_openid_start_session();
+	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
 
-	// Reject callbacks that were not initiated by a legitimate OAuth redirect from this site.
-	// mo_openid_state is set exclusively in mo_openid_custom_app_oauth_redirect() when the user
-	// clicks a social login button, so a fresh attacker-crafted session will always be missing it.
-	if ( empty( $_SESSION['mo_openid_state'] ) ) {
+	// Reject callbacks that were not initiated by a legitimate OAuth redirect from this site,
+	// and -- critically -- that the value the provider echoed back in this callback is the
+	// exact one we generated and sent as `state` (see mo_openid_generate_oauth_state()), not
+	// merely that some state happens to be sitting in the session. A missing/empty value on
+	// either side is ALWAYS a reject: hash_equals('', '') returns true, so both sides are
+	// required to be non-empty before the comparison is even attempted, otherwise an
+	// attacker-armed session with no state ever supplied by a provider (e.g. by racing this
+	// endpoint before mo_openid_get_app_code() runs) can't slip through as a "match".
+	// Twitter's OAuth1.0a flow has no `state` parameter of its own -- mo_twitter binds its
+	// request token to the session in the same way and checks it against the callback's
+	// oauth_token itself, so it only needs the session-side leg of this check.
+	$session_state    = isset( $_SESSION['mo_openid_state'] ) ? $_SESSION['mo_openid_state'] : ''; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- generated exclusively by mo_openid_generate_oauth_state(), never taken from request input; verified below via hash_equals() against the provider-echoed value.
+	$is_twitter_login = strpos( $request_uri, 'oauth_verifier' ) !== false;
+	unset( $_SESSION['mo_openid_state'] ); // one-time use, discarded regardless of outcome.
+
+	if ( empty( $session_state ) ) {
 		wp_die( 'Invalid OAuth session. Please initiate login from the social login button.' );
 	}
-	unset( $_SESSION['mo_openid_state'] );
 
-	if ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'oauth_verifier' ) !== false ) {
+	if ( ! $is_twitter_login ) {
+		$received_state = isset( $_REQUEST['state'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['state'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- this is the OAuth CSRF `state` value itself, verified below via hash_equals() against the session-stored value; it is not a WP nonce.
+		if ( empty( $received_state ) || ! hash_equals( $session_state, $received_state ) ) {
+			wp_die( 'Invalid OAuth session. Please initiate login from the social login button.' );
+		}
+	}
+
+	if ( $is_twitter_login ) {
 		$_SESSION['appname'] = 'twitter';
 	}
 
 	if ( isset( $_SESSION['appname'] ) ) {
 		$appname = sanitize_text_field($_SESSION['appname']);
-	} elseif ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback' ) !== false ) {
-		if ( ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback/google' ) !== false ) || ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback=google' ) !== false ) ) {
+	} elseif ( strpos( $request_uri, 'openidcallback' ) !== false ) {
+		if ( ( strpos( $request_uri, 'openidcallback/google' ) !== false ) || ( strpos( $request_uri, 'openidcallback=google' ) !== false ) ) {
 			$appname = 'google';
-		} elseif ( ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback/facebook' ) !== false ) || ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback=facebook' ) !== false ) ) {
+		} elseif ( ( strpos( $request_uri, 'openidcallback/facebook' ) !== false ) || ( strpos( $request_uri, 'openidcallback=facebook' ) !== false ) ) {
 			$appname = 'facebook';
-		} elseif ( ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback/vkontakte' ) !== false ) ) {
+		} elseif ( ( strpos( $request_uri, 'openidcallback/vkontakte' ) !== false ) ) {
 			$appname = 'vkontakte';
-		} elseif ( ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback/linkedin' ) !== false ) ) {
+		} elseif ( ( strpos( $request_uri, 'openidcallback/linkedin' ) !== false ) ) {
 			$appname = 'linkedin';
-		} elseif ( ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback/linkedin_oidc' ) !== false ) ) {
+		} elseif ( ( strpos( $request_uri, 'openidcallback/linkedin_oidc' ) !== false ) ) {
 			$appname = 'linkedin_oidc';
-		} elseif ( ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback/amazon' ) !== false ) || ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback=amazon' ) !== false ) ) {
+		} elseif ( ( strpos( $request_uri, 'openidcallback/amazon' ) !== false ) || ( strpos( $request_uri, 'openidcallback=amazon' ) !== false ) ) {
 			$appname = 'amazon';
-		} elseif ( ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback/yahoo' ) !== false ) || ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback=yaahoo' ) !== false ) ) {
+		} elseif ( ( strpos( $request_uri, 'openidcallback/yahoo' ) !== false ) || ( strpos( $request_uri, 'openidcallback=yaahoo' ) !== false ) ) {
 			$appname = 'yahoo';
-		} elseif ( ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback/wordpress' ) !== false ) || ( strpos( sanitize_text_field($_SERVER['REQUEST_URI']), 'openidcallback=wordpress' ) !== false ) ) {
+		} elseif ( ( strpos( $request_uri, 'openidcallback/wordpress' ) !== false ) || ( strpos( $request_uri, 'openidcallback=wordpress' ) !== false ) ) {
 			$appname = 'wordpress';
 		}
 	} else {
@@ -188,54 +321,13 @@ function mo_openid_process_custom_app_callback() {
 	if ( ! mo_openid_validate_social_app( $appname ) ) {
 		wp_die( esc_html__( 'Invalid social app specified.', 'miniorange-login-openid' ) );
 	}
+	mo_openid_require_configured_app( $appname );
 
 	require 'social_apps/' . $appname . '.php';
 	$mo_appname     = 'mo_' . $appname;
 	$social_app     = new $mo_appname();
 	$appuserdetails = $social_app->mo_openid_get_access_token();
 	mo_openid_process_user_details( $appuserdetails, $appname );
-}
-
-function mo_openid_process_social_login() {
-
-	if ( is_user_logged_in() ) {
-		return;
-	}
-	// Decrypt all entries
-	$decrypted_user_name = isset( $_POST['username'] ) ? sanitize_text_field(  mo_openid_decrypt_sanitize( $_POST['username'] ) ) : ''; 		// phpcs:ignore
-	$decrypted_user_name = str_replace( ' ', '-', $decrypted_user_name );
-	$decrypted_user_name = sanitize_text_field( $decrypted_user_name, true );
-	$decrypted_email     = isset( $_POST['email'] ) ? sanitize_text_field(  mo_openid_decrypt_sanitize( $_POST['email'] ) ) : ''; 	// phpcs:ignore
-	if ( $decrypted_user_name == null ) {
-		$name_em             = explode( '@', $decrypted_email );
-		$decrypted_user_name = isset( $name_em[0] ) ? $name_em[0] : '';
-	}
-	 $decrypted_first_name = isset( $_POST['firstName'] ) ? sanitize_text_field(  mo_openid_decrypt_sanitize( $_POST['firstName'] ) ) : ''; 	//phpcs:ignore
-	if ( $decrypted_first_name == null ) {
-		$name_em              = explode( '@', $decrypted_email );
-		$decrypted_first_name = isset( $name_em[0] ) ? $name_em[0] : '';
-	}
-	$decrypted_app_name = isset( $_POST['appName'] ) ? sanitize_text_field(  mo_openid_decrypt_sanitize( $_POST['appName'] ) ) : ''; 	//phpcs:ignore
-	$decrypted_app_name = strtolower( $decrypted_app_name );
-	$split_app_name     = explode( '_', $decrypted_app_name );
-	// check to ensure login starts at the click of social login button
-	if ( empty( $split_app_name[0] ) ) {
-		wp_die( esc_attr( get_option( 'mo_manual_login_error_message' ) ) );
-	} else {
-		$decrypted_app_name = strtolower( $split_app_name[0] );
-	}
-
-	$appuserdetails = array(
-		'first_name'     => $decrypted_first_name,
-		'last_name'      => isset( $_POST['lastName'] ) ? sanitize_text_field(  mo_openid_decrypt_sanitize( $_POST['lastName'] ) ) : '',		//phpcs:ignore
-		'email'          => $decrypted_email,
-		'user_name'      => $decrypted_user_name,
-		'user_url'       => isset( $_POST['profileUrl'] ) ?  sanitize_text_field( mo_openid_decrypt_sanitize( $_POST['profileUrl'] ) ) : '',		//phpcs:ignore
-		'user_picture'   => isset( $_POST['profilePic'] ) ?  sanitize_text_field( mo_openid_decrypt_sanitize($_POST['profilePic'] ) ) : '',	//phpcs:ignore
-		'social_user_id' => isset( $_POST['userid'] ) ? sanitize_text_field(  mo_openid_decrypt_sanitize( $_POST['userid'] ) ) : '', 	//phpcs:ignore
-	);
-
-	mo_openid_process_user_details( $appuserdetails, $decrypted_app_name );
 }
 
 function mo_openid_process_user_details( $appuserdetails, $appname ) {
@@ -293,15 +385,33 @@ function mo_openid_process_user_details( $appuserdetails, $appname ) {
 
 	// check_existing_user
 	global $wpdb;
-	$linked_email_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_social_app = %s AND identifier = %s', array( $appname, $social_user_id ) ) );
+	$mo_cache_key       = mo_openid_cache_key( 'linked_user_by_app_identifier:' . $appname . '|' . $social_user_id );
+	$mo_cache_found     = false;
+	$linked_email_id    = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+	if ( false === $mo_cache_found ) {
+		$linked_email_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_social_app = %s AND identifier = %s', array( $appname, $social_user_id ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- custom plugin table; cached below via wp_cache_set().
+		wp_cache_set( $mo_cache_key, $linked_email_id, MO_OPENID_CACHE_GROUP, 60 );
+	}
 	$user_email      = sanitize_email( $email );
 
-	$email_user_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_email = %s', $user_email ) );
+	$mo_cache_key   = mo_openid_cache_key( 'linked_user_by_email:' . $user_email );
+	$mo_cache_found = false;
+	$email_user_id  = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+	if ( false === $mo_cache_found ) {
+		$email_user_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_email = %s', $user_email ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- custom plugin table; cached below via wp_cache_set().
+		wp_cache_set( $mo_cache_key, $email_user_id, MO_OPENID_CACHE_GROUP, 60 );
+	}
 
 	if ( empty( $user_email ) ) {
 		$existing_email_user_id = null;
 	} else {
-		$existing_email_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_email = %s", $user_email ) );
+		$mo_cache_key           = mo_openid_cache_key( 'wp_user_id_by_email:' . $user_email );
+		$mo_cache_found         = false;
+		$existing_email_user_id = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+		if ( false === $mo_cache_found ) {
+			$existing_email_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_email = %s", $user_email ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- checking wp_users for an existing email; cached below via wp_cache_set().
+			wp_cache_set( $mo_cache_key, $existing_email_user_id, MO_OPENID_CACHE_GROUP, 60 );
+		}
 	}
 
 	$session_values = array(
@@ -364,7 +474,13 @@ function mo_create_new_user( $user_val ) {
 	$appname        = $user_val['social_app_name'];
 	$social_user_id = $user_val['social_user_id'];
 	global $wpdb;
-	$linked_email_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_social_app = %s AND identifier = %s', array( $appname, $social_user_id ) ) );
+	$mo_cache_key       = mo_openid_cache_key( 'linked_user_by_app_identifier:' . $appname . '|' . $social_user_id );
+	$mo_cache_found     = false;
+	$linked_email_id    = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+	if ( false === $mo_cache_found ) {
+		$linked_email_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_social_app = %s AND identifier = %s', array( $appname, $social_user_id ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- custom plugin table; cached below via wp_cache_set().
+		wp_cache_set( $mo_cache_key, $linked_email_id, MO_OPENID_CACHE_GROUP, 60 );
+	}
 	$user_email      = sanitize_email( $email );
 	if ( empty( $user_name ) && ! empty( $email ) ) {
 		$split_email = explode( '@', $email );
@@ -387,16 +503,34 @@ function mo_create_new_user( $user_val ) {
 	}
 
 	// Checking if username already exist
-	$user_name_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_login = %s", $user_name ) );
+	$mo_cache_key       = mo_openid_cache_key( 'wp_user_id_by_login:' . $user_name );
+	$mo_cache_found     = false;
+	$user_name_user_id  = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+	if ( false === $mo_cache_found ) {
+		$user_name_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_login = %s", $user_name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- checking wp_users for an existing login; cached below via wp_cache_set().
+		wp_cache_set( $mo_cache_key, $user_name_user_id, MO_OPENID_CACHE_GROUP, 60 );
+	}
 
 	if ( isset( $user_name_user_id ) ) {
 		$email_array       = explode( '@', $user_email );
 		$user_name         = $email_array[0];
-		$user_name_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_login = %s", $user_name ) );
+		$mo_cache_key       = mo_openid_cache_key( 'wp_user_id_by_login:' . $user_name );
+		$mo_cache_found     = false;
+		$user_name_user_id  = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+		if ( false === $mo_cache_found ) {
+			$user_name_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_login = %s", $user_name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- checking wp_users for an existing login; cached below via wp_cache_set().
+			wp_cache_set( $mo_cache_key, $user_name_user_id, MO_OPENID_CACHE_GROUP, 60 );
+		}
 		$i                 = 1;
 		while ( ! empty( $user_name_user_id ) ) {
 			$uname             = $user_name . '_' . $i;
-			$user_name_user_id = $wpdb->get_var( $wpdb->prepare( 'SELECT ID FROM ' . $wpdb->prefix . 'users where user_login = %s', $uname ) );
+			$mo_cache_key       = mo_openid_cache_key( 'wp_user_id_by_login:' . $uname );
+			$mo_cache_found     = false;
+			$user_name_user_id  = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+			if ( false === $mo_cache_found ) {
+				$user_name_user_id = $wpdb->get_var( $wpdb->prepare( 'SELECT ID FROM ' . $wpdb->prefix . 'users where user_login = %s', $uname ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- checking wp_users for an existing login; cached below via wp_cache_set().
+				wp_cache_set( $mo_cache_key, $user_name_user_id, MO_OPENID_CACHE_GROUP, 60 );
+			}
 			$i++;
 			if ( empty( $user_name_user_id ) ) {
 				$user_name = $uname;
@@ -426,8 +560,7 @@ function mo_create_new_user( $user_val ) {
 	$user_id  = wp_insert_user( $userdata );
 
 	if ( is_wp_error( $user_id ) ) {
-		print_r( $user_id );
-		wp_die( 'Error Code 5: ' . esc_attr( get_option( 'mo_registration_error_message' ) ) );
+		wp_die( 'Error Code 5: ' . esc_attr( get_option( 'mo_registration_error_message' ) ) . ' ' . esc_html( $user_id->get_error_message() ) );
 	}
 
 	update_option( 'mo_openid_user_count', get_option( 'mo_openid_user_count' ) + 1 );
@@ -449,7 +582,13 @@ function mo_create_new_user( $user_val ) {
 	// registration hook
 	do_action( 'mo_user_register', $user_id, $user_profile_url );
 	mo_openid_link_account( $user->user_login, $user );
-	$linked_email_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_social_app = %s AND identifier = %s', array( $appname, $social_user_id ) ) );
+	$mo_cache_key       = mo_openid_cache_key( 'linked_user_by_app_identifier:' . $appname . '|' . $social_user_id );
+	$mo_cache_found     = false;
+	$linked_email_id    = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+	if ( false === $mo_cache_found ) {
+		$linked_email_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_social_app = %s AND identifier = %s', array( $appname, $social_user_id ) ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- custom plugin table; cached below via wp_cache_set().
+		wp_cache_set( $mo_cache_key, $linked_email_id, MO_OPENID_CACHE_GROUP, 60 );
+	}
 	mo_openid_login_user( $linked_email_id, $user_id, $user, $user_picture, 0 );
 }
 
@@ -516,10 +655,13 @@ function mo_openid_plugin_update() {
 	$table_name      = $wpdb->prefix . 'mo_openid_linked_user';
 	$charset_collate = $wpdb->get_charset_collate();
 
-	$time = $wpdb->get_var(
+	// One-time upgrade routine: introspects/alters schema below, so there is
+	// nothing meaningful to cache -- a cached value would not reflect the
+	// table's live structure.
+	$time = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- one-time upgrade routine; schema introspection, not a cacheable read.
 		$wpdb->prepare(
-			"SELECT COLUMN_NAME 
-                                    FROM information_schema.COLUMNS 
+			"SELECT COLUMN_NAME
+                                    FROM information_schema.COLUMNS
                                     WHERE
                                      TABLE_SCHEMA= %s
                                      AND COLUMN_NAME = 'timestamp'",
@@ -527,9 +669,9 @@ function mo_openid_plugin_update() {
 		)
 	);
 
-	$data_type = $wpdb->get_var(
+	$data_type = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- one-time upgrade routine; schema introspection, not a cacheable read.
 		$wpdb->prepare(
-			"SELECT DATA_TYPE 
+			"SELECT DATA_TYPE
     FROM information_schema.COLUMNS
     WHERE
     TABLE_SCHEMA= %s
@@ -539,13 +681,14 @@ function mo_openid_plugin_update() {
 		)
 	);
 
-	if ( $data_type == 'mediumint' ) {
-		$wpdb->get_var( $wpdb->prepare( 'ALTER TABLE %s CHANGE `user_id` `user_id` BIGINT(20) NOT NULL', $table_name ) );
+	if ( 'mediumint' === $data_type ) {
+		$wpdb->get_var( 'ALTER TABLE ' . esc_sql( $table_name ) . ' CHANGE `user_id` `user_id` BIGINT(20) NOT NULL' ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- one-time upgrade routine; table name is built from $wpdb->prefix (not user input) and additionally esc_sql()'d, and ALTER TABLE has no cacheable result.
 
 	}
 
 	// if table mo_openid_linked_user doesn't exist or the 'timestamp' column doesn't exist
-	if ( $wpdb->get_var( $wpdb->prepare( 'show tables like %s', $table_name ) ) != $table_name || empty( $time ) ) {
+	if ( $wpdb->get_var( $wpdb->prepare( 'show tables like %s', $table_name ) ) != $table_name || empty( $time ) ) { // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- one-time upgrade routine; schema introspection, not a cacheable read.
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.SchemaChange -- one-time upgrade routine; creates the plugin's own table via dbDelta().
 		$sql = "CREATE TABLE $table_name (
                     id mediumint(9) NOT NULL AUTO_INCREMENT,
                     linked_social_app varchar(55) NOT NULL,
@@ -558,22 +701,22 @@ function mo_openid_plugin_update() {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 		dbDelta( $sql );
 
-		$identifier = $wpdb->get_var(
+		$identifier = $wpdb->get_var( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- one-time upgrade routine; schema introspection, not a cacheable read.
 			$wpdb->prepare(
-				"SELECT COLUMN_NAME 
-                                    FROM information_schema.COLUMNS 
-                                    WHERE 
-                                    TABLE_NAME = %s 
+				"SELECT COLUMN_NAME
+                                    FROM information_schema.COLUMNS
+                                    WHERE
+                                    TABLE_NAME = %s
                                     AND TABLE_SCHEMA= %s
                                     AND COLUMN_NAME = 'identifier'",
 				array( $wpdb->users, $wpdb->dbname )
 			)
 		);
 
-		if ( strcasecmp( $identifier, 'identifier' ) == 0 ) {
+		if ( strcasecmp( (string) $identifier, 'identifier' ) === 0 ) {
 
-			$count  = $wpdb->get_var( "SELECT count(ID) FROM $wpdb->users WHERE identifier not LIKE ''" );
-			$result = $wpdb->get_results( "SELECT * FROM $wpdb->users WHERE identifier not LIKE ''" );
+			$count  = $wpdb->get_var( "SELECT count(ID) FROM $wpdb->users WHERE identifier not LIKE ''" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- one-time upgrade/migration routine; result is consumed immediately below, not a cacheable read.
+			$result = $wpdb->get_results( "SELECT * FROM $wpdb->users WHERE identifier not LIKE ''" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- one-time upgrade/migration routine; result is consumed immediately below, not a cacheable read.
 
 			for ( $icnt = 0; $icnt < $count; $icnt = $icnt + 1 ) {
 
@@ -584,7 +727,7 @@ function mo_openid_plugin_update() {
 				$ID             = $result[ $icnt ]->ID;
 				$identifier     = $result[ $icnt ]->identifier;
 
-				$output = $wpdb->insert(
+				$output = $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- one-time upgrade/migration routine.
 					$table_name,
 					array(
 						'linked_social_app' => $provider,
@@ -607,8 +750,8 @@ function mo_openid_plugin_update() {
 
 				}
 			}
-			$wpdb->get_var( "ALTER TABLE $wpdb->users DROP COLUMN provider" );
-			$wpdb->get_var( "ALTER TABLE $wpdb->users DROP COLUMN identifier" );
+			$wpdb->get_var( "ALTER TABLE $wpdb->users DROP COLUMN provider" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- one-time upgrade routine; ALTER TABLE has no cacheable result.
+			$wpdb->get_var( "ALTER TABLE $wpdb->users DROP COLUMN identifier" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- one-time upgrade routine; ALTER TABLE has no cacheable result.
 		}
 	}
 
@@ -616,16 +759,15 @@ function mo_openid_plugin_update() {
 
 	if ( ! $current_version && version_compare( MO_OPENID_SOCIAL_LOGIN_VERSION, '200.1.1', '>=' ) ) {
 		// delete entries from mo_openid_linked_user table which have empty column values
-		$result = $wpdb->query(
+		$result = $wpdb->query( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- one-time upgrade routine; DELETE has no cacheable result. Table name is built from $wpdb->prefix (not user input), additionally esc_sql()'d below, and can't be a %s placeholder (prepare() would quote it as a string literal).
 			$wpdb->prepare(
 				'
-                        DELETE FROM %s
+                        DELETE FROM ' . esc_sql( $table_name ) . '
                         WHERE linked_social_app = %s
                         OR linked_email = %s
                         OR user_id = %d
                         OR identifier = %s
                         ',
-				$table_name,
 				'',
 				'',
 				0,
@@ -650,7 +792,7 @@ function mo_openid_delete_social_profile( $id ) {
 	$metakey2 = 'last_name';
 	$metakey3 = 'moopenid_user_avatar';
 	$metakey4 = 'moopenid_user_profile_url';
-	$wpdb->query( $wpdb->prepare( 'DELETE from ' . $wpdb->prefix . 'usermeta where user_id = %d and (meta_key = %s or meta_key = %s  or meta_key = %s  or meta_key = %s)', $id, $metakey1, $metakey2, $metakey3, $metakey4 ) );
+	$wpdb->query( $wpdb->prepare( 'DELETE from ' . $wpdb->prefix . 'usermeta where user_id = %d and (meta_key = %s or meta_key = %s  or meta_key = %s  or meta_key = %s)', $id, $metakey1, $metakey2, $metakey3, $metakey4 ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching,WordPress.DB.DirectDatabaseQuery.SchemaChange -- DELETE has no cacheable result.
 	update_user_meta( $id, 'mo_openid_data_deleted', '1' );
 	exit;
 }
@@ -773,22 +915,22 @@ function mo_openid_show_addon_message_page( $add ) {
 }
 
 function mo_openid_show_verify_addon_license_page() {
-	$nonce = sanitize_text_field( $_POST['mo_openid_verify_addon_license_nonce'] );
+	$nonce = isset( $_POST['mo_openid_verify_addon_license_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_verify_addon_license_nonce'] ) ) : '';
 	if ( ! wp_verify_nonce( $nonce, 'mo-openid-verify-addon-license-nonce' ) ) {
 		wp_die( '<strong>ERROR WPSL27</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 	} else {
 		if(current_user_can('administrator')){
-		if ( sanitize_text_field( $_POST['plan_name'] ) == 'extra_attributes_addon' ) {
+		if ( ( isset( $_POST['plan_name'] ) ? sanitize_text_field( wp_unslash( $_POST['plan_name'] ) ) : '' ) === 'extra_attributes_addon' ) {
 			wp_send_json( array( 'html' => mo_openid_show_verify_license_page( 'extra_attributes_addon' ) ) );
-		} elseif ( sanitize_text_field( $_POST['plan_name'] ) == 'WP_SOCIAL_LOGIN_WOOCOMMERCE_ADDON' ) {
+		} elseif ( ( isset( $_POST['plan_name'] ) ? sanitize_text_field( wp_unslash( $_POST['plan_name'] ) ) : '' ) === 'WP_SOCIAL_LOGIN_WOOCOMMERCE_ADDON' ) {
 			wp_send_json( array( 'html' => mo_openid_show_verify_license_page( 'WP_SOCIAL_LOGIN_WOOCOMMERCE_ADDON' ) ) );
-		} elseif ( sanitize_text_field( $_POST['plan_name'] ) == 'WP_SOCIAL_LOGIN_MAILCHIMP_ADDON' ) {
+		} elseif ( ( isset( $_POST['plan_name'] ) ? sanitize_text_field( wp_unslash( $_POST['plan_name'] ) ) : '' ) === 'WP_SOCIAL_LOGIN_MAILCHIMP_ADDON' ) {
 			wp_send_json( array( 'html' => mo_openid_show_verify_license_page( 'WP_SOCIAL_LOGIN_MAILCHIMP_ADDON' ) ) );
-		} elseif ( sanitize_text_field( $_POST['plan_name'] ) == 'WP_SOCIAL_LOGIN_BUDDYPRESS_ADDON' ) {
+		} elseif ( ( isset( $_POST['plan_name'] ) ? sanitize_text_field( wp_unslash( $_POST['plan_name'] ) ) : '' ) === 'WP_SOCIAL_LOGIN_BUDDYPRESS_ADDON' ) {
 			wp_send_json( array( 'html' => mo_openid_show_verify_license_page( 'WP_SOCIAL_LOGIN_BUDDYPRESS_ADDON' ) ) );
-		} elseif ( sanitize_text_field( $_POST['plan_name'] ) == 'WP_SOCIAL_LOGIN_HUBSPOT_ADDON' ) {
+		} elseif ( ( isset( $_POST['plan_name'] ) ? sanitize_text_field( wp_unslash( $_POST['plan_name'] ) ) : '' ) === 'WP_SOCIAL_LOGIN_HUBSPOT_ADDON' ) {
 			wp_send_json( array( 'html' => mo_openid_show_verify_license_page( 'WP_SOCIAL_LOGIN_HUBSPOT_ADDON' ) ) );
-		} elseif ( sanitize_text_field( $_POST['plan_name'] ) == 'WP_SOCIAL_LOGIN_DISCORD_ADDON' ) {
+		} elseif ( ( isset( $_POST['plan_name'] ) ? sanitize_text_field( wp_unslash( $_POST['plan_name'] ) ) : '' ) === 'WP_SOCIAL_LOGIN_DISCORD_ADDON' ) {
 			wp_send_json( array( 'html' => mo_openid_show_verify_license_page( 'WP_SOCIAL_LOGIN_DISCORD_ADDON' ) ) );
 		}
 	}
@@ -902,26 +1044,6 @@ function mo_openid_check_empty_or_null( $value ) {
 		return true;
 	}
 	return false;
-}
-
-function mo_openid_decrypt_sanitize( $param ) {
-	if ( strcmp( $param, 'null' ) != 0 && strcmp( $param, '' ) != 0 ) {
-		$customer_token  = get_option( 'mo_openid_customer_token' );
-		$decrypted_token = decrypt_data( $param, $customer_token );
-		// removes control characters and some blank characters
-		$decrypted_token_sanitise = preg_replace( '/[\x00-\x1F][\x7F][\x81][\x8D][\x8F][\x90][\x9D][\xA0][\xAD]/', '', $decrypted_token );
-		// strips space,tab,newline,carriage return,NUL-byte,vertical tab.
-		return trim( $decrypted_token_sanitise );
-	} else {
-		return '';
-	}
-
-}
-
-function decrypt_data( $data, $key ) {
-
-	return openssl_decrypt( base64_decode( $data ), 'aes-128-ecb', $key, OPENSSL_RAW_DATA );
-
 }
 
 function mo_openid_show_success_message() {
@@ -1124,7 +1246,7 @@ function create_customer($password) {
 		if ( strcasecmp( $customerKey['status'], 'CUSTOMER_USERNAME_ALREADY_EXISTS' ) == 0 ) {
 			get_current_customer($password);
 		} elseif ( ( strcasecmp( $customerKey['status'], 'INVALID_EMAIL_QUICK_EMAIL' ) == 0 ) && ( strcasecmp( $customerKey['message'], 'This is not a valid email. please enter a valid email.' ) == 0 ) ) {
-			if ( isset( $_POST['action'] ) ? sanitize_text_field( $_POST['action'] ) == 'mo_register_new_user' : 0 ) {
+			if ( isset( $_POST['action'] ) ? ( isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : '' ) === 'mo_register_new_user' : 0 ) {
 				wp_send_json( array( 'error' => 'There was an error creating an account for you. You may have entered an invalid Email-Id. (We discourage the use of disposable emails) Please try again with a valid email.' ) );
 			} else {
 				update_option( 'mo_openid_message', 'There was an error creating an account for you. You may have entered an invalid Email-Id. <b> (We discourage the use of disposable emails) </b> Please try again with a valid email.' );
@@ -1136,7 +1258,7 @@ function create_customer($password) {
 				}
 			}
 		} elseif ( ( strcasecmp( $customerKey['status'], 'FAILED' ) == 0 ) && ( strcasecmp( $customerKey['message'], 'Email is not enterprise email.' ) == 0 ) ) {
-			if ( isset( $_POST['action'] ) ? sanitize_text_field( $_POST['action'] ) == 'mo_register_new_user' : 0 ) {
+			if ( isset( $_POST['action'] ) ? ( isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : '' ) === 'mo_register_new_user' : 0 ) {
 				wp_send_json( array( 'error' => 'There was an error creating an account for you. You may have entered an invalid Email-Id. (We discourage the use of disposable emails) Please try again with a valid email.' ) );
 			} else {
 				update_option( 'mo_openid_message', 'There was an error creating an account for you. You may have entered an invalid Email-Id. <b> (We discourage the use of disposable emails) </b> Please try again with a valid email.' );
@@ -1156,7 +1278,7 @@ function create_customer($password) {
 			update_option( 'mo_openid_registration_status', 'MO_OPENID_REGISTRATION_COMPLETE' );
 			delete_option( 'mo_openid_verify_customer' );
 			delete_option( 'mo_openid_new_registration' );
-			if ( isset( $_POST['action'] ) ? sanitize_text_field( $_POST['action'] ) == 'mo_register_new_user' : 0 ) {
+			if ( isset( $_POST['action'] ) ? ( isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : '' ) === 'mo_register_new_user' : 0 ) {
 				wp_send_json( array( 'success' => 'Registration complete!' ) );
 			} else {
 				mo_openid_show_success_message();
@@ -1173,13 +1295,17 @@ function mo_openid_register_user() {
 	$confirmPassword = '';
 	$illegal         = "#$%^*()+=[]';,/{}|:<>?~";
 	$illegal         = $illegal . '"';
-	$nonce           = sanitize_text_field( $_POST['mo_openid_connect_register_nonce'] );
+	$nonce = isset( $_POST['mo_openid_connect_register_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_connect_register_nonce'] ) ) : '';
 	if ( ! wp_verify_nonce( $nonce, 'mo-openid-connect-register-nonce' ) ) {
 		wp_die( '<strong>ERROR WPSL29</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 	} else {
 		if ( current_user_can( 'administrator' ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- nonce already verified above; this is a raw password value that must NOT be run through a content sanitizer like sanitize_text_field() (it could alter a legitimate password), so wp_unslash() -- undoing WP's automatic POST-data slashing -- is the correct and complete treatment.
+			$post_password        = isset( $_POST['password'] ) ? (string) wp_unslash( $_POST['password'] ) : '';
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- see $post_password above.
+			$post_confirmPassword = isset( $_POST['confirmPassword'] ) ? (string) wp_unslash( $_POST['confirmPassword'] ) : '';
 
-			if ( mo_openid_check_empty_or_null( sanitize_email( $_POST['email'] ) ) || mo_openid_check_empty_or_null( $_POST['password'] ) || mo_openid_check_empty_or_null( $_POST['confirmPassword'] ) )  // phpcs:ignore
+			if ( mo_openid_check_empty_or_null( ( isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '' ) ) || mo_openid_check_empty_or_null( $post_password ) || mo_openid_check_empty_or_null( $post_confirmPassword ) )
 			{
 				update_option( 'mo_openid_message', 'All the fields are required. Please enter valid entries.' );
 				mo_openid_show_error_message();
@@ -1188,7 +1314,7 @@ function mo_openid_register_user() {
 					mo_openid_registeration_modal();
 				}
 				return;
-			} elseif ( strlen( $_POST['password'] ) < 6 || strlen( $_POST['confirmPassword'] ) < 6 )  // phpcs:ignore
+			} elseif ( strlen( $post_password ) < 6 || strlen( $post_confirmPassword ) < 6 )
 			{    // check password is of minimum length 6
 				update_option( 'mo_openid_message', 'Choose a password with minimum length 6.' );
 				mo_openid_show_error_message();
@@ -1197,7 +1323,7 @@ function mo_openid_register_user() {
 					mo_openid_registeration_modal();
 				}
 				return;
-			} elseif ( strpbrk( sanitize_email( $_POST['email'] ), $illegal ) ) {
+			} elseif ( strpbrk( ( isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '' ), $illegal ) ) {
 				update_option( 'mo_openid_message', 'Please match the format of Email. No special characters are allowed.' );
 				mo_openid_show_error_message();
 				if ( get_option( 'regi_pop_up' ) == 'yes' ) {
@@ -1205,7 +1331,7 @@ function mo_openid_register_user() {
 					mo_openid_registeration_modal();
 				}
 				return;
-			} elseif ( strcmp( stripslashes( $_POST['password'] ), stripslashes( $_POST['confirmPassword'] ) ) != 0 ) // phpcs:ignore
+			} elseif ( strcmp( stripslashes( $post_password ), stripslashes( $post_confirmPassword ) ) != 0 )
 			{
 				update_option( 'mo_openid_message', 'Passwords do not match.' );
 				if ( get_option( 'regi_pop_up' ) == 'yes' ) {
@@ -1215,14 +1341,14 @@ function mo_openid_register_user() {
 				delete_option( 'mo_openid_verify_customer' );
 				mo_openid_show_error_message();
 			} else {
-				$email    = sanitize_email( $_POST['email'] );
-				$password = stripslashes( $_POST['password'] ); //phpcs:ignore
+				$email    = ( isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '' );
+				$password = stripslashes( $post_password );
 				update_option( 'mo_openid_admin_email', $email );
 				$customer = new CustomerOpenID();
 				$content  = json_decode( $customer->check_customer(), true );
 				if ( strcasecmp( $content['status'], 'CUSTOMER_NOT_FOUND' ) == 0 ) {
 					if ( $content['status'] == 'ERROR' ) {
-						if ( sanitize_text_field( $_POST['action'] ) == 'mo_register_new_user' ) {
+						if ( ( isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : '' ) === 'mo_register_new_user' ) {
 							wp_send_json( array( 'error' => $content['message'] ) );
 						} else {
 							update_option( 'mo_openid_message', $content['message'] );
@@ -1235,7 +1361,7 @@ function mo_openid_register_user() {
 						update_option( 'mo_openid_malform_error', '1' );
 					}
 				} elseif ( $content == null ) {
-					if ( sanitize_text_field( $_POST['action'] ) == 'mo_register_new_user' ) {
+					if ( ( isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : '' ) === 'mo_register_new_user' ) {
 						wp_send_json( array( 'error' => 'Please check your internet connetion and try again.' ) );
 					} else {
 						update_option( 'mo_openid_message', 'Please check your internet connetion and try again.' );
@@ -1261,23 +1387,25 @@ function mo_register_old_user() {
 	$illegal  = "#$%^*()+=[]';,/{}|:<>?~";
 	$illegal  = $illegal . '"';
 	$message  = new miniorange_openid_sso_settings();
-	$nonce    = sanitize_text_field( $_POST['mo_openid_connect_verify_nonce'] );
+	$nonce = isset( $_POST['mo_openid_connect_verify_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_connect_verify_nonce'] ) ) : '';
 	if ( ! wp_verify_nonce( $nonce, 'mo-openid-connect-verify-nonce' ) ) {
 		wp_die( '<strong>ERROR WPSL30</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 	} else {
 		if(current_user_can('administrator')){
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- nonce already verified above; this is a raw password value that must NOT be run through a content sanitizer like sanitize_text_field() (it could alter a legitimate password), so wp_unslash() -- undoing WP's automatic POST-data slashing -- is the correct and complete treatment.
+		$post_password = isset( $_POST['password'] ) ? (string) wp_unslash( $_POST['password'] ) : '';
 
-		if ( mo_openid_check_empty_or_null( sanitize_email( $_POST['email'] ) ) || mo_openid_check_empty_or_null( $_POST['password'] ) ) {  // phpcs:ignore
+		if ( mo_openid_check_empty_or_null( ( isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '' ) ) || mo_openid_check_empty_or_null( $post_password ) ) {
 			update_option( 'mo_openid_message', 'All the fields are required. Please enter valid entries.' );
 			$message->mo_openid_show_error_message();
 			return;
-		} elseif ( strpbrk( sanitize_email( $_POST['email'] ), $illegal ) ) {
+		} elseif ( strpbrk( ( isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '' ), $illegal ) ) {
 			update_option( 'mo_openid_message', 'Please match the format of Email. No special characters are allowed.' );
 			$message->mo_openid_show_error_message();
 			return;
 		} else {
-			$email    = sanitize_email( $_POST['email'] );
-			$password = stripslashes( $_POST['password'] );  // phpcs:ignore
+			$email    = ( isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '' );
+			$password = stripslashes( $post_password );
 		}
 		update_option( 'mo_openid_admin_email', $email );
 		$customer    = new CustomerOpenID();
@@ -1290,13 +1418,13 @@ function mo_register_old_user() {
 			update_option( 'mo_openid_admin_phone', isset( $customerKey['phone'] ) ? $customerKey['phone'] : '' );
 			update_option( 'mo_openid_message', 'Your account has been retrieved successfully.' );
 			delete_option( 'mo_openid_verify_customer' );
-			if ( isset( $_POST['action'] ) ? sanitize_text_field( $_POST['action'] ) == 'mo_register_old_user' : false ) {
+			if ( isset( $_POST['action'] ) ? ( isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : '' ) === 'mo_register_old_user' : false ) {
 				wp_send_json( array( 'success' => 'Your account has been retrieved successfully.' ) );
 			} else {
 				mo_openid_show_success_message();
 			}
 		} else {
-			if ( isset( $_POST['action'] ) ? sanitize_text_field( $_POST['action'] ) == 'mo_register_old_user' : false ) {
+			if ( isset( $_POST['action'] ) ? ( isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) : '' ) === 'mo_register_old_user' : false ) {
 				wp_send_json( array( 'error' => 'Invalid username or password. Please try again.' ) );
 			} else {
 				update_option( 'mo_openid_message', 'Invalid username or password. Please try again.' );
@@ -1385,19 +1513,19 @@ function mo_pop_show_verify_password_page() {
 }
 
 function mo_openid_share_action() {
-	$nonce = sanitize_text_field( $_POST['mo_openid_share_nonce'] );
+	$nonce = isset( $_POST['mo_openid_share_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_share_nonce'] ) ) : '';
 	if ( ! wp_verify_nonce( $nonce, 'mo-openid-share' ) ) {
 		wp_die( '<strong>ERROR WPSL31</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 	} else {
 		if ( current_user_can( 'administrator' ) ) {
-			$enable_id = sanitize_text_field( $_POST['enabled'] );
+			$enable_id = ( isset( $_POST['enabled'] ) ? sanitize_text_field( wp_unslash( $_POST['enabled'] ) ) : '' );
 
 			if ( $enable_id == 'true' ) {
 
-				update_option( sanitize_text_field( $_POST['id_name'] ), 1 );
+				update_option( ( isset( $_POST['id_name'] ) ? sanitize_text_field( wp_unslash( $_POST['id_name'] ) ) : '' ), 1 );
 			} elseif ( $enable_id == 'false' ) {
 
-				update_option( sanitize_text_field( $_POST['id_name'] ), 0 );
+				update_option( ( isset( $_POST['id_name'] ) ? sanitize_text_field( wp_unslash( $_POST['id_name'] ) ) : '' ), 0 );
 			}
 		}
 	}
@@ -1413,14 +1541,14 @@ function mo_openid_restrict_user() {
 }
 
 function mo_sharing_app_value() {
-	$nonce = sanitize_text_field( $_POST['mo_openid_sharing_app_value_nonce'] );
+	$nonce = isset( $_POST['mo_openid_sharing_app_value_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_sharing_app_value_nonce'] ) ) : '';
 	if ( ! wp_verify_nonce( $nonce, 'mo-openid-sharing-app-value-nonce' ) ) {
 		wp_die( '<strong>ERROR WPSL32</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 	} else {
 		if(current_user_can('administrator')){
 		$return_apps = '';
 		$count       = 1;
-		$appname_arr = isset( $_POST['app_name'] ) ? array_map( 'sanitize_text_field', $_POST['app_name'] ) : '';
+		$appname_arr = isset( $_POST['app_name'] ) ? array_map( 'sanitize_text_field', wp_unslash( $_POST['app_name'] ) ) : '';
 		foreach ( $appname_arr as $app ) {
 			$app_value = get_option( 'mo_openid_' . $app . '_share_enable' );
 			if ( $app_value ) {
@@ -1475,19 +1603,19 @@ function update_custom_data( $user_id ) {  // phpcs:ignore
 			}
 		}
 		if ( $type != 'checkbox' ) {
-			if ( $type == 'dropdown' && sanitize_text_field( $_POST['user_role'] ) ) { // phpcs:ignore 
+			if ( $type === 'dropdown' && ( isset( $_POST['user_role'] ) ? sanitize_text_field( wp_unslash( $_POST['user_role'] ) ) : '' ) ) { // phpcs:ignore
 				$user = get_user_by( 'ID', $user_id );
 				$allowed_role_arr = mo_openid_check_allowed_role_map();
-				$search_str_lwr = strtolower(sanitize_text_field( $_POST['user_role'] ) );
+				$search_str_lwr = strtolower(( isset( $_POST['user_role'] ) ? sanitize_text_field( wp_unslash( $_POST['user_role'] ) ) : '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce already verified by the caller before this helper runs.
     
 				foreach ($allowed_role_arr as $item) {
 					if (strcasecmp($search_str_lwr, strtolower($item)) === 0) {
-						$user->set_role( strtolower( sanitize_text_field( $_POST['user_role'] ) ) );  // phpcs:ignore 
-						update_user_meta( $user_id, $field_update, sanitize_text_field( $_POST['user_role'] ) ); 	// phpcs:ignore 
+						$user->set_role( strtolower( ( isset( $_POST['user_role'] ) ? sanitize_text_field( wp_unslash( $_POST['user_role'] ) ) : '' ) ) );  // phpcs:ignore 
+						update_user_meta( $user_id, $field_update, ( isset( $_POST['user_role'] ) ? sanitize_text_field( wp_unslash( $_POST['user_role'] ) ) : '' ) ); 	// phpcs:ignore 
 					}
 				}
 			} else {
-				update_user_meta( $user_id, $field_update, sanitize_text_field( $_POST[ $field ] ) );	// phpcs:ignore 
+				update_user_meta( $user_id, $field_update, isset( $_POST[ $field ] ) ? sanitize_text_field( wp_unslash( $_POST[ $field ] ) ) : '' );	// phpcs:ignore
 			}
 		} else {
 			$flag    = 0;
@@ -1540,12 +1668,12 @@ function mo_openid_activation_message() {
 }
 
 function mo_openid_rating_given() {
-	$nonce = sanitize_text_field( $_POST['mo_openid_rating_given_nonce'] );
+	$nonce = isset( $_POST['mo_openid_rating_given_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_rating_given_nonce'] ) ) : '';
 	if ( ! wp_verify_nonce( $nonce, 'mo-openid-rating-given-nonce' ) ) {
 		wp_die( '<strong>ERROR WPSL33</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 	} else {
 		if(current_user_can('administrator')){
-		update_option( 'mo_openid_rating_given', sanitize_text_field( $_POST['rating'] ) );
+		update_option( 'mo_openid_rating_given', ( isset( $_POST['rating'] ) ? sanitize_text_field( wp_unslash( $_POST['rating'] ) ) : '' ) );
 		}
 	}
 }

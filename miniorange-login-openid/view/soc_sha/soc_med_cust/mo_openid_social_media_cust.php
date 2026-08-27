@@ -1,9 +1,13 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_social_icons_customization() {
 	?>
   <script>jQuery('#mo_openid_page_heading').text('<?php echo esc_attr( mo_sl( 'Social Customize Icons' ) ); ?>');
-   var temp = jQuery("<a style=\"left: 1%; padding:4px; position: relative; text-decoration: none\" class=\"mo-openid-premium\" href=\"<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>\">PRO</a>");
+   var temp = jQuery("<a style=\"left: 1%; padding:4px; position: relative; text-decoration: none\" class=\"mo-openid-premium\" href=\"<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>\">PRO</a>");
 					jQuery("#mo_openid_page_heading").append(temp);</script>
 
   <form id="social_media_cust" name="social_media_cust" method="post" action="">
@@ -12,7 +16,7 @@ function mo_openid_social_icons_customization() {
 			   value="<?php echo esc_attr( wp_create_nonce( 'mo-openid-social-media-cust-nonce' ) ); ?>"/>
 	<div style="height: auto; padding: 20px 20px 20px 20px; "><table style="width:60%">
 		 <tr><td>
-		  <h2>Hover Icons <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h2>
+		  <h2>Hover Icons <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h2>
 		  <?php echo esc_attr( Cursor_icon_hover() ); ?>
 				<br><br>Use this <b>[hover-icon]</b> shortcode to display mouse hover icons.
 		</td></tr>
@@ -21,7 +25,7 @@ function mo_openid_social_icons_customization() {
 </form>
 <div class="mo_openid_table_layout" style="height: auto; padding: 20px 20px 20px 20px;">
 			<form method='post' action='' name='myform' enctype='multipart/form-data'>
-				<h3>Upload image <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h3>
+				<h3>Upload image <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h3>
 				<label style="cursor: auto" class="mo_openid_note_style">&nbsp;&nbsp;&nbsp;<?php echo esc_attr( mo_sl( '<b> Unlock this feature if you want to setup your own customize social sharing app</b>' ) ); ?>.</label><br>
 				<input type='file' name='file' disabled>
 				<input type='submit' name='image_submit' value='Submit' disabled>

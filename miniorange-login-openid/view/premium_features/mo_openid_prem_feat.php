@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_premium_features() {
 	?>
 	<style>
@@ -87,7 +91,7 @@ function mo_openid_premium_features() {
 					<div class="card-state-icon"></div>
 					<label for="admin_pass_verify"></label>
 					<h4><?php echo esc_attr( mo_sl( 'Force Admin To Login Using Password' ) ); ?></h4>
-					<a style="left: 513%; top:40%; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+					<a style="left: 513%; top:40%; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 					<p><?php echo esc_attr( ( 'Admin user tries to login using social login then he will need to enter WordPress admin login credentials to login.' ) ); ?></p>
 					<p class="small-meta dim"></p>
 				</div>
@@ -102,7 +106,7 @@ function mo_openid_premium_features() {
 					<div class="card-state-icon"></div>
 					<label for="mo_openid_user_moderation">    </label>
 					<h4><?php echo esc_attr( mo_sl( 'User Moderation' ) ); ?></h4>
-					<a style="left: 513%; top:40%; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+					<a style="left: 513%; top:40%; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 					<p><?php echo esc_attr( mo_sl( 'Enable this feature to restrict the access of newly registered users. User created through social login will not be able to access your website until admin will not allow them by activating their accounts else' ) ); ?></p>
 					<p class="small-meta dim">[ *<?php echo esc_attr( mo_sl( 'Notice: SMTP should be configured to send activation emails. ' ) ); ?>]
 					</p>
@@ -118,7 +122,7 @@ function mo_openid_premium_features() {
 					<div class="card-state-icon"></div>
 					<label for="mo_openid_notification_email"></label>
 					<h4><?php echo esc_attr( mo_sl( 'Reset Password' ) ); ?> </h4>
-					<a style="left: 513%; top:40%; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+					<a style="left: 513%; top:40%; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 					<p><?php echo esc_attr( mo_sl( 'Send password reset link to user after registration' ) ); ?></p>
 					<p class="small-meta dim">[ *<?php echo esc_attr( esc_attr( mo_sl( 'Notice: SMTP should be configured to send activation emails' ) ) ); ?>. ]</p>
 				</div>
@@ -132,7 +136,7 @@ function mo_openid_premium_features() {
 				<div class="card-content">
 					<div class="card-state-icon"></div>
 					<h4><?php echo esc_attr( mo_sl( 'Extended User Attribute' ) ); ?></h4>
-					<a style="left: 513%; top:40%; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+					<a style="left: 513%; top:40%; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 					<p><?php echo esc_attr( mo_sl( 'Mainly the required data(name,lastname,email) is mapped and use after the user gets login. If you want to use more data that is provided from the app you can enable this feature.(The data is depend on app to app)' ) ); ?> </p>
 					<p class="small-meta dim"><?php echo esc_attr( mo_sl( 'Custom App of should be set for this feature' ) ); ?></p>
 				</div>
@@ -146,7 +150,7 @@ function mo_openid_premium_features() {
 				<div class="card-content">
 					<div class="card-state-icon"></div>
 					<h4><?php echo esc_attr( mo_sl( 'Redirect to social in a new window' ) ); ?></h4>
-					<a style="left: 513%; top:40%; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+					<a style="left: 513%; top:40%; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 					<p><?php echo esc_attr( mo_sl( 'While login with social login. The login page opens in a new tab. After the login process the tab gets closed.' ) ); ?></p>
 					<p class="small-meta dim"></p>
 				</div>

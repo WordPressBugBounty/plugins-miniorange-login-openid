@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 
 class mo_linkedin_oidc {
 
@@ -7,6 +11,7 @@ class mo_linkedin_oidc {
 	public $scope     = 'openid email profile';
 	public $video_url = 'https://www.youtube.com/embed/Qs-PSyy7KVQ';
 	public $instructions;
+	public $site_url;
 	public function __construct() {
 		$this->site_url     = get_option( 'siteurl' );
 		$this->instructions = "Go to <a href=\"http://developer.linkedin.com/\" target=\"_blank\">http://developer.linkedin.com/</a> and click on <strong>Create Apps</strong> and sign in with your linkedin account.##Enter the Application Name, Linkedin page URl or name, Privacy Policy URL, And upload app logo.##If you don't have a linked in page click on <a href=\"https://www.linkedin.com/company/setup/new/\" target=\"_blank\">https://www.linkedin.com/company/setup/new/</a> to create a new page.##Check the <b>API Terms of Use</b> and click on create app.##Click on <b>Auth</b> tab and enter <b><code id='11'>" . mo_get_permalink( 'linkedin_oidc' ) . "</code><i style= \"width: 11px;height: 9px;padding-left:2px;padding-top:3px\" class=\"far fa-fw fa-lg fa-copy mo_copy mo_copytooltip\" onclick=\"copyToClipboard(this, '#11', '#shortcode_url_copy')\"><span id=\"shortcode_url_copy\" class=\"mo_copytooltiptext\">Copy to Clipboard</span></i></b> as <strong>Redirect URLs </strong>and click on <strong>Update</strong>##On the same page you will be able to see your <strong>Client ID</strong> and <strong>Client Secret</strong> under the <strong>Application credentials</strong> section. Copy these and Paste them into the fields above. ##Go to the <b>Product tab</b>.##Find <b>Sign In with LinkedIn using OpenID Connect</b> and click on <b>Select</b>. Check the legal agreement check box and Click on <b>Request Access</b>.##Find <b>Share on LinkedIn</b> and click on <b>Select</b> .Check the legal agreement check box and Click on <b>Request Access</b>. This permission required for social sharing.##Wait till Linkedin approves your permission. ##Click on the Save settings button.##Go to Social Login tab to configure the display as well as other login settings";
@@ -19,7 +24,7 @@ class mo_linkedin_oidc {
 		$_SESSION['appname'] = 'linkedin_oidc';
 		$client_id           = $appslist['linkedin_oidc']['clientid'];
 		$scope               = $appslist['linkedin_oidc']['scope'];
-		$login_dialog_url    = 'https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=' . $client_id . '&redirect_uri=' . $social_app_redirect_uri . '&state=fooobar&scope=' . $scope;
+		$login_dialog_url    = 'https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=' . $client_id . '&redirect_uri=' . $social_app_redirect_uri . '&state=' . rawurlencode( mo_openid_get_current_oauth_state() ) . '&scope=' . $scope;
 		header( 'Location:' . $login_dialog_url );
 		exit;
 	}
@@ -44,10 +49,26 @@ class mo_linkedin_oidc {
 		$access_token = isset( $access_token_json_output['access_token'] ) ? $access_token_json_output['access_token'] : '';
 		mo_openid_start_session();
 
-		$get_jwt=$access_token_json_output['id_token'];
-		$get_jwt=explode( '.', $get_jwt );
-		$get_jwt=base64_decode( str_pad( strtr( $get_jwt[1], '-_', '+/' ), strlen( $data ) % 4, '=', STR_PAD_RIGHT ) );
-		$profile_json_output = json_decode($get_jwt, true);
+		// Decode the id_token JWT's payload segment (base64url, RFC 4648 SS5) to read the user's
+		// profile claims. id_token is absent whenever the token exchange itself failed (e.g. an
+		// invalid/expired code), so this is guarded rather than read unconditionally -- previously
+		// this triggered an undefined-array-key warning here, and the base64_decode() padding
+		// below referenced an undefined $data variable (a copy-paste leftover) which both warned
+		// on every real login and miscalculated the padding regardless: str_pad()'s second
+		// argument is the target total length, not a padding-character count, so
+		// strlen(...) % 4 (always 0-3) left the payload unpadded and unparseable.
+		$id_token             = isset( $access_token_json_output['id_token'] ) ? $access_token_json_output['id_token'] : '';
+		$jwt_parts            = explode( '.', $id_token );
+		$profile_json_output = array();
+		if ( isset( $jwt_parts[1] ) && '' !== $jwt_parts[1] ) {
+			$jwt_payload    = strtr( $jwt_parts[1], '-_', '+/' );
+			$padded_length  = strlen( $jwt_payload ) + ( 4 - strlen( $jwt_payload ) % 4 ) % 4;
+			$decoded_jwt    = base64_decode( str_pad( $jwt_payload, $padded_length, '=', STR_PAD_RIGHT ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- decoding a JWT payload segment (RFC 4648 base64url), not obfuscated code.
+			$decoded_json = json_decode( $decoded_jwt, true );
+			if ( is_array( $decoded_json ) ) {
+				$profile_json_output = $decoded_json;
+			}
+		}
 		// Test Configuration
 		if ( is_user_logged_in() && get_option( 'mo_openid_test_configuration' ) == 1 ) {
 			mo_openid_app_test_config( $profile_json_output );

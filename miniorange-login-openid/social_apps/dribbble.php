@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 
 class mo_dribbble {
 
@@ -7,6 +11,7 @@ class mo_dribbble {
 	public $scope     = 'public';
 	public $video_url = 'https://www.youtube.com/embed/9M95pxJ8Emo';
 	public $instructions;
+	public $site_url;
 	public function __construct() {
 		$this->site_url     = get_option( 'siteurl' );
 		$this->instructions = "Go to Dribbble developers dashboard <a href=\"https://dribbble.com/account/applications/\" target=\"_blank\">https://dribbble.com/account/applications/</a>. ##Go to applications, click on register a new application.## Enter <b>Application details. </b> ##Click on Register Application</b>. Enter <b><code id='7'>" . get_option( 'siteurl' ) . "</code><i style= \"width: 11px;height: 9px;padding-left:2px;padding-top:3px\" class=\"far fa-fw fa-lg fa-copy mo_copy mo_copytooltip\" onclick=\"copyToClipboard(this, '#7', '#shortcode_url7_copy')\"><span id=\"shortcode_url7_copy\" class=\"mo_copytooltiptext\">Copy to Clipboard</span></i></b> into <b>Website</b> ##Under Client Redirect URI section, Enter <b><code id='8'>" . mo_get_permalink( 'dribbble' ) . "</code><i style= \"width: 11px;height: 9px;padding-left:2px;padding-top:3px\" class=\"far fa-fw fa-lg fa-copy mo_copy mo_copytooltip\" onclick=\"copyToClipboard(this, '#8', '#shortcode_url8_copy')\"><span id=\"shortcode_url8_copy\" class=\"mo_copytooltiptext\">Copy to Clipboard</span></i></b> and click on <b>Add</b> button. ##Paste your <b>Client ID</b> and <b>CLient Secret</b> provided by dribbble into the fields above.##Click on the <b>Save settings</b> button.##Go to Social Login tab to configure the display as well as other login settings.";
@@ -18,7 +23,7 @@ class mo_dribbble {
 		$_SESSION['appname'] = 'dribbble';
 		$client_id           = $appslist['dribbble']['clientid'];
 		$scope               = $appslist['dribbble']['scope'];
-		$login_dialog_url    = 'https://dribbble.com/oauth/authorize?client_id=' . $client_id . '&redirect_uri=' . $social_app_redirect_uri . '&scope=' . $scope . '&state=' . $state;
+		$login_dialog_url    = 'https://dribbble.com/oauth/authorize?client_id=' . $client_id . '&redirect_uri=' . $social_app_redirect_uri . '&scope=' . $scope . '&state=' . rawurlencode( mo_openid_get_current_oauth_state() );
 		header( 'Location:' . $login_dialog_url );
 		exit;
 	}

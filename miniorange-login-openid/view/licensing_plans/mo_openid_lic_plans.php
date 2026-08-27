@@ -1,7 +1,11 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_licensing_plans() {
-	wp_enqueue_style( 'mo_openid_plugins_page_style', esc_url( plugin_dir_url( dirname( dirname( __FILE__ ) ) ) . 'includes/css/mo_openid_licensing_plan.css?version=' . MO_OPENID_SOCIAL_LOGIN_VERSION ) );
+	wp_enqueue_style( 'mo_openid_plugins_page_style', esc_url( plugin_dir_url( dirname( dirname( __FILE__ ) ) ) . 'includes/css/mo_openid_licensing_plan.css?version=' . MO_OPENID_SOCIAL_LOGIN_VERSION ), array(), MO_OPENID_SOCIAL_LOGIN_VERSION );
 	?>
 	<input type="hidden" id="mo_license_plan_selected" value="" />
 	<div class="mo-openid-tab-content">

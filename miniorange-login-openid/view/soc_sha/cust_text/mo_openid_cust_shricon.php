@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_openid_customize_icons() {
 	$default_color = array(
 		'facebook'      => '#1877F2',
@@ -47,7 +51,6 @@ function mo_openid_customize_icons() {
 	);
 
 	?>
-<!--    <link rel="stylesheet" type="text/css">-->
 	<form id="customize_text" name="customize_text" method="post" action="">
 	<input type="hidden" name="option" value="mo_openid_enable_customize_text" />
 	<input type="hidden" name="mo_openid_enable_customize_text_nonce"

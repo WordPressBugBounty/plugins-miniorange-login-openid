@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 require_once ABSPATH . 'wp-includes/plugin.php';
 function mo_openid_share_apps() {
 	?>
@@ -204,7 +208,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Amazon_wishlist' ) ); ?>
 									<input type="checkbox" id="mo_openid_amazon_wishlist_share_enable" disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -217,7 +221,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Telegram' ) ); ?>
 									<input type="checkbox" id="mo_openid_telegram_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -228,7 +232,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Line' ) ); ?>
 									<input type="checkbox" id="mo_openid_line_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -239,7 +243,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Yahoo' ) ); ?>
 									<input type="checkbox" id="mo_openid_yahoo_mail_share_enable" disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -250,7 +254,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Renren' ) ); ?>
 									<input type="checkbox" id="mo_openid_renren_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -261,7 +265,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Buffer' ) ); ?>
 									<input type="checkbox" id="mo_openid_buffer_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 						</tr>
@@ -272,7 +276,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Instapaper' ) ); ?>
 									<input type="checkbox" id="mo_openid_instapaper_share_enable" disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -283,7 +287,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Mewe' ) ); ?>
 									<input type="checkbox" id="mo_openid_mewe_share_enable" disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -294,7 +298,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Livejournal' ) ); ?>
 									<input type="checkbox" id="mo_openid_livejournal_share_enable" disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -305,7 +309,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Mix' ) ); ?>
 									<input type="checkbox" id="mo_openid_mix_share_enable" disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -316,7 +320,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Aol_mail' ) ); ?>
 									<input type="checkbox" id="mo_openid_aol_mail_share_enable" disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -329,7 +333,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Qzone' ) ); ?>
 									<input type="checkbox" id="mo_openid_qzone_share_enable" disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -340,7 +344,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Gmail' ) ); ?>
 									<input type="checkbox" id="mo_openid_gmail_share_enable" disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -351,7 +355,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Typepad_post' ) ); ?>
 									<input type="checkbox" id="mo_openid_typepad_post_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -362,7 +366,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Fark' ) ); ?>
 									<input type="checkbox" id="mo_openid_fark_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -373,7 +377,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Bookmark' ) ); ?>
 									<input type="checkbox" id="mo_openid_bookmark_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -386,7 +390,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Fintel' ) ); ?>
 									<input type="checkbox" id="mo_openid_fintel_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -397,7 +401,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Mendeley' ) ); ?>
 									<input type="checkbox" id="mo_openid_mendeley_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -409,7 +413,7 @@ function mo_openid_share_apps() {
 									<input type="checkbox" id="mo_openid_slashdot_share_enable"
 											disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -420,7 +424,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Wanelo' ) ); ?>
 									<input type="checkbox" id="mo_openid_wanelo_share_enable" disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -431,7 +435,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Classroom' ) ); ?>
 									<input type="checkbox" id="mo_openid_google_classroom_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -444,7 +448,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Yummly' ) ); ?>
 									<input type="checkbox" id="mo_openid_yummly_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -455,7 +459,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Hacker_news' ) ); ?>
 									<input type="checkbox" id="mo_openid_hacker_news_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -466,7 +470,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Kakao' ) ); ?>
 									<input type="checkbox" id="mo_openid_kakao_share_enable" disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -477,7 +481,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Plurk' ) ); ?>
 									<input type="checkbox" id="mo_openid_plurk_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -488,7 +492,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Trello' ) ); ?>
 									<input type="checkbox" id="mo_openid_trello_share_enable" disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -501,7 +505,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Wykop' ) ); ?>
 									<input type="checkbox" id="mo_openid_wykop_share_enable"  disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 
@@ -512,7 +516,7 @@ function mo_openid_share_apps() {
 								<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Weibo' ) ); ?>
 									<input type="checkbox" id="mo_openid_weibo_share_enable" disabled/>
 									<span class="mo_openid_checkbox_checkmark"></span>
-									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+									<a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 								</label>
 
 

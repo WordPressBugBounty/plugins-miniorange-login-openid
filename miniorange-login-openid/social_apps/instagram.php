@@ -1,11 +1,16 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 
 class mo_instagram {
 
 	public $color = '#517FA6';
 	public $scope = 'user_profile,user_media';
 	public $instructions;
+	public $site_url;
 	public function __construct() {
 		if ( get_option( 'permalink_structure' ) !== '' ) {
 			$this->site_url     = get_option( 'siteurl' );
@@ -32,7 +37,7 @@ class mo_instagram {
 		$_SESSION['appname'] = 'instagram';
 		$client_id           = $appslist['instagram']['clientid'];
 		$scope               = $appslist['instagram']['scope'];
-		$login_dialog_url    = 'https://api.instagram.com/oauth/authorize/?client_id=' . $client_id . '&redirect_uri=' . $social_app_redirect_uri . '&scope=' . $scope . '&response_type=code';
+		$login_dialog_url    = 'https://api.instagram.com/oauth/authorize/?client_id=' . $client_id . '&redirect_uri=' . $social_app_redirect_uri . '&scope=' . $scope . '&response_type=code&state=' . rawurlencode( mo_openid_get_current_oauth_state() );
 		header( 'Location:' . $login_dialog_url );
 		exit;
 	}

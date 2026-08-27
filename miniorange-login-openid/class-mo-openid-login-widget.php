@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 require 'mo-openid-social-login-functions.php';
 require_once ABSPATH . 'wp-admin/includes/user.php';
 add_action( 'wp_login', 'mo_openid_link_account', 5, 2 );
@@ -43,7 +47,7 @@ class mo_openid_login_wid extends WP_Widget {
 			'mo_openid_login_wid',
 			'miniOrange Social Login Widget',
 			array(
-				'description'                 => __( 'Login using Social Apps like Google, Facebook, LinkedIn.', 'flw' ),
+				'description'                 => __( 'Login using Social Apps like Google, Facebook, LinkedIn.', 'miniorange-login-openid' ),
 				'customize_selective_refresh' => true,
 			)
 		);
@@ -81,14 +85,14 @@ class mo_openid_login_wid extends WP_Widget {
 
 	public function update( $new_instance, $old_instance ) {
 		$instance              = array();
-		$instance['wid_title'] = strip_tags( $new_instance['wid_title'] );
+		$instance['wid_title'] = wp_strip_all_tags( $new_instance['wid_title'] );
 		return $instance;
 	}
 
 
 	public function openidloginForm() {
 		$selected_theme         = esc_attr( get_option( 'mo_openid_login_theme' ) );
-		$appsConfigured         = get_option( 'mo_openid_google_enable' ) | get_option( 'mo_openid_salesforce_enable' ) | get_option( 'mo_openid_facebook_enable' ) | get_option( 'mo_openid_linkedin_enable' ) | get_option( 'mo_openid_amazon_enable' ) | get_option( 'mo_openid_twitter_enable' ) | get_option( 'mo_openid_vkontakte_enable' ) | get_option( 'mo_openid_yahoo_enable' ) | get_option( 'mo_openid_snapchat_enable' ) | get_option( 'mo_openid_dribbble_enable' ) | get_option( 'mo_openid_discord_enable' );
+		$appsConfigured         = get_option( 'mo_openid_google_enable' ) | get_option( 'mo_openid_facebook_enable' ) | get_option( 'mo_openid_linkedin_enable' ) | get_option( 'mo_openid_amazon_enable' ) | get_option( 'mo_openid_twitter_enable' ) | get_option( 'mo_openid_vkontakte_enable' ) | get_option( 'mo_openid_yahoo_enable' ) | get_option( 'mo_openid_snapchat_enable' ) | get_option( 'mo_openid_dribbble_enable' ) | get_option( 'mo_openid_discord_enable' );
 		$spacebetweenicons      = esc_attr( get_option( 'mo_login_icon_space' ) );
 		$customWidth            = esc_attr( get_option( 'mo_login_icon_custom_width' ) );
 		$customHeight           = esc_attr( get_option( 'mo_login_icon_custom_height' ) );
@@ -122,8 +126,12 @@ class mo_openid_login_wid extends WP_Widget {
 			$consent_message = get_option( 'mo_openid_gdpr_consent_message' );
 		}
 
-		$protocol    = ( ( ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] != 'off' ) || $_SERVER['SERVER_PORT'] == 443 ) ? 'https://' : 'http://';
-		$sign_up_url = $protocol . sanitize_text_field( $_SERVER['HTTP_HOST'] ) . sanitize_text_field( $_SERVER['REQUEST_URI'] );
+		$https_val   = isset( $_SERVER['HTTPS'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTPS'] ) ) : '';
+		$server_port = isset( $_SERVER['SERVER_PORT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_PORT'] ) ) : '';
+		$protocol    = ( ( ! empty( $https_val ) && $https_val !== 'off' ) || 443 === (int) $server_port ) ? 'https://' : 'http://';
+		$http_host   = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+		$sign_up_url = $protocol . $http_host . $request_uri;
 		$mo_URL      = strstr( $sign_up_url, '?', true );
 		if ( $mo_URL ) {
 			setcookie( 'mo_openid_signup_url', $mo_URL, time() + ( 86400 * 30 ), '/' );} else {
@@ -194,13 +202,13 @@ class mo_openid_login_wid extends WP_Widget {
 				if ( empty( $customLogoutName ) || empty( $customLogoutLink ) ) {
 					?>
 				<div id="logged_in_user" class="mo_openid_login_wid">
-					<li><?php echo esc_attr( $link_with_username ); ?> <a href='<?php echo esc_url( wp_logout_url( site_url() ) ); ?>' title='<?php esc_attr_e( 'Logout', 'flw' ); ?>'><?php esc_attr_e( $customLogoutLink, 'flw' ); ?></a></li>
+					<li><?php echo esc_attr( $link_with_username ); ?> <a href='<?php echo esc_url( wp_logout_url( site_url() ) ); ?>' title='<?php esc_attr_e( 'Logout', 'miniorange-login-openid' ); ?>'><?php echo esc_attr( $customLogoutLink ); ?></a></li>
 				</div>
 					<?php
 				} else {
 					?>
 				<div id="logged_in_user" class="mo_openid_login_wid">
-					<li><?php echo esc_attr( $link_with_username ); ?> <a href='<?php echo esc_url( wp_logout_url( site_url() ) ); ?>' title='<?php esc_attr_e( 'Logout', 'flw' ); ?>'><?php esc_attr_e( $customLogoutLink, 'flw' ); ?></a></li>
+					<li><?php echo esc_attr( $link_with_username ); ?> <a href='<?php echo esc_url( wp_logout_url( site_url() ) ); ?>' title='<?php esc_attr_e( 'Logout', 'miniorange-login-openid' ); ?>'><?php echo esc_attr( $customLogoutLink ); ?></a></li>
 				</div>
 					<?php
 				}
@@ -241,24 +249,38 @@ class mo_openid_login_wid extends WP_Widget {
 		$selected_theme         = isset( $atts['shape'] ) ? esc_attr( $atts['shape'] ) : esc_attr( get_option( 'mo_openid_login_theme' ) );
 		$selected_apps          = isset( $atts['apps'] ) ? esc_attr( $atts['apps'] ) : '';
 		$application_pos        = get_option( 'app_pos' );
-		$appsConfigured         = get_option( 'mo_openid_facebook_enable' ) | get_option( 'mo_openid_google_enable' ) | get_option( 'mo_openid_vkontakte_enable' ) | get_option( 'mo_openid_twitter_enable' ) | get_option( 'mo_openid_linkedin_enable' ) | get_option( 'mo_openid_amazon_enable' ) | get_option( 'mo_openid_salesforce_enable' ) | get_option( 'mo_openid_yahoo_enable' ) | get_option( 'mo_openid_snapchat_enable' ) | get_option( 'mo_openid_dribbble_enable' ) | get_option( 'mo_openid_discord_enable' );
+		$appsConfigured         = get_option( 'mo_openid_facebook_enable' ) | get_option( 'mo_openid_google_enable' ) | get_option( 'mo_openid_vkontakte_enable' ) | get_option( 'mo_openid_twitter_enable' ) | get_option( 'mo_openid_linkedin_enable' ) | get_option( 'mo_openid_amazon_enable' ) | get_option( 'mo_openid_yahoo_enable' ) | get_option( 'mo_openid_snapchat_enable' ) | get_option( 'mo_openid_dribbble_enable' ) | get_option( 'mo_openid_discord_enable' );
 		$spacebetweenicons      = isset( $atts['space'] ) ? esc_attr( intval( $atts['space'] ) ) : esc_attr( intval( get_option( 'mo_login_icon_space' ) ) );
 		$customWidth            = isset( $atts['width'] ) ? esc_attr( intval( $atts['width'] ) ) : esc_attr( intval( get_option( 'mo_login_icon_custom_width' ) ) );
 		$customHeight           = isset( $atts['height'] ) ? esc_attr( intval( $atts['height'] ) ) : esc_attr( intval( get_option( 'mo_login_icon_custom_height' ) ) );
 		$customSize             = isset( $atts['size'] ) ? esc_attr( intval( $atts['size'] ) ) : esc_attr( intval( get_option( 'mo_login_icon_custom_size' ) ) );
-		$customBackground       = isset( $atts['background'] ) ? esc_attr( $atts['background'] ) : esc_attr( get_option( 'mo_login_icon_custom_color' ) );
-		$customHoverBackground  = isset( $atts['background_hover'] ) ? esc_attr( $atts['background_hover'] ) : esc_attr( get_option( 'mo_login_icon_custom_hover_color' ) );
-		$customSmartBackground1 = isset( $atts['background_smart1'] ) ? esc_attr( $atts['background_smart1'] ) : esc_attr( get_option( 'mo_login_icon_custom_smart_color1' ) );
-		$customSmartBackground2 = isset( $atts['background_smart2'] ) ? esc_attr( $atts['background_smart2'] ) : esc_attr( get_option( 'mo_login_icon_custom_smart_color2' ) );
+		// These color attributes end up concatenated into inline onMouseOver/onMouseOut event
+		// handlers further down (add_apps(), 'custom_hover' theme) as well as style="" attributes.
+		// esc_attr() alone is NOT sufficient there: a browser HTML-decodes an attribute's value
+		// (turning esc_attr()'s &#039; back into ') before handing that value to the JS engine as
+		// the event handler's source, so a payload like fff';alert(document.domain);x=' survives
+		// esc_attr() completely intact and breaks out of the intended JS string literal once the
+		// browser parses it. mo_openid_sanitize_css_color() (shared with the sharing shortcode,
+		// see class-mo-openid-sso-shortcode-buttons.php) closes this by construction: only a bare
+		// hex color or plain alphabetic keyword is ever accepted, so the value can never contain a
+		// quote, semicolon, or paren in the first place -- also closing the same CSS-injection
+		// class of issue for the plain style="" contexts these values are used in elsewhere.
+		$customBackground       = mo_openid_sanitize_css_color( isset( $atts['background'] ) ? $atts['background'] : get_option( 'mo_login_icon_custom_color' ), '2B41FF' );
+		$customHoverBackground  = mo_openid_sanitize_css_color( isset( $atts['background_hover'] ) ? $atts['background_hover'] : get_option( 'mo_login_icon_custom_hover_color' ), '4AB8D4' );
+		$customSmartBackground1 = mo_openid_sanitize_css_color( isset( $atts['background_smart1'] ) ? $atts['background_smart1'] : get_option( 'mo_login_icon_custom_smart_color1' ), 'FF1F4B' );
+		$customSmartBackground2 = mo_openid_sanitize_css_color( isset( $atts['background_smart2'] ) ? $atts['background_smart2'] : get_option( 'mo_login_icon_custom_smart_color2' ), '2008FF' );
 		$effectStatus           = isset( $atts['effectStatus'] ) ? esc_attr( $atts['effectStatus'] ) : esc_attr( get_option( 'mo_openid_button_theme_effect' ) );
 		$customTheme            = isset( $atts['theme'] ) ? esc_attr( $atts['theme'] ) : esc_attr( get_option( 'mo_openid_login_custom_theme' ) );
 		$buttonText             = esc_html( get_option( 'mo_openid_login_button_customize_text' ) );
 		$customTextofTitle      = esc_attr( get_option( 'mo_openid_login_button_customize_text' ) );
 		$logoutUrl              = esc_url( wp_logout_url( site_url() ) );
-		$customBoundary         = isset( $atts['edge'] ) ? esc_attr( $atts['edge'] ) : esc_attr( get_option( 'mo_login_icon_custom_boundary' ) );
+		// border-radius px value -- concatenated straight into style="...px" below, so this is cast
+		// to a plain integer the same way space/width/height/size already are (a value like
+		// "4;position:fixed;..." would otherwise inject additional CSS declarations).
+		$customBoundary         = isset( $atts['edge'] ) ? (int) $atts['edge'] : (int) get_option( 'mo_login_icon_custom_boundary' );
 		$customLogoutName       = esc_attr( get_option( 'mo_openid_login_widget_customize_logout_name_text' ) );
 		$customLogoutLink       = get_option( 'mo_openid_login_widget_customize_logout_text' );
-		$customTextColor        = isset( $atts['color'] ) ? esc_attr( $atts['color'] ) : esc_attr( get_option( 'mo_login_openid_login_widget_customize_textcolor' ) );
+		$customTextColor        = mo_openid_sanitize_css_color( isset( $atts['color'] ) ? $atts['color'] : get_option( 'mo_login_openid_login_widget_customize_textcolor' ), '000000' );
 		$customText             = isset( $atts['heading'] ) ? esc_html( $atts['heading'] ) : esc_html( get_option( 'mo_openid_login_widget_customize_text' ) );
 		$view                   = isset( $atts['view'] ) ? esc_attr( $atts['view'] ) : '';
 		$appcnt                 = isset( $atts['appcnt'] ) ? esc_attr( $atts['appcnt'] ) : '';
@@ -289,8 +311,12 @@ class mo_openid_login_wid extends WP_Widget {
 		} else {
 			$dis = '';
 		}
-		$protocol    = ( ( ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] != 'off' ) || $_SERVER['SERVER_PORT'] == 443 ) ? 'https://' : 'http://';
-		$sign_up_url = $protocol . sanitize_text_field( $_SERVER['HTTP_HOST'] ) . sanitize_text_field( $_SERVER['REQUEST_URI'] );
+		$https_val   = isset( $_SERVER['HTTPS'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTPS'] ) ) : '';
+		$server_port = isset( $_SERVER['SERVER_PORT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['SERVER_PORT'] ) ) : '';
+		$protocol    = ( ( ! empty( $https_val ) && $https_val !== 'off' ) || 443 === (int) $server_port ) ? 'https://' : 'http://';
+		$http_host   = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+		$sign_up_url = $protocol . $http_host . $request_uri;
 		$mo_URL      = strstr( $sign_up_url, '?', true );
 		if ( $mo_URL ) {
 			setcookie( 'mo_openid_signup_url', $mo_URL, time() + ( 86400 * 30 ), '/' );
@@ -330,7 +356,7 @@ class mo_openid_login_wid extends WP_Widget {
 		} else {
 			$current_user     = wp_get_current_user();
 			$customLogoutName = str_replace( '##username##', $current_user->display_name, $customLogoutName );
-			$flw              = __( $customLogoutLink, 'flw' );
+			$flw              = $customLogoutLink;
 			if ( empty( $customLogoutName ) || empty( $customLogoutLink ) ) {
 				$html .= '<div id="logged_in_user" class="mo_openid_login_wid">' . esc_attr( $customLogoutName ) . ' <a href=' . esc_url( $logoutUrl ) . ' title=" ' . esc_attr( $flw ) . '"> ' . esc_attr( $flw ) . '</a></div>';
 			} else {
@@ -376,7 +402,7 @@ class mo_openid_login_wid extends WP_Widget {
 
 			$this->mo_openid_load_login_script();
 			$html .= "<div class='mo-openid-app-icons'>
-					 <p style='color:#" . $customTextColor . "; width: fit-content;'> $customText</p>";
+					 <p style='color:" . $customTextColor . "; width: fit-content;'> $customText</p>";
 			if ( get_option( 'mo_openid_gdpr_consent_enable' ) ) {
 				$html .= '<label class="mo-consent" style="width: 100%"><input type="checkbox" onchange="mo_openid_on_consent_change(this)" value="1" id="mo_openid_consent_checkbox">';
 				$html .= $consent_message . '</label>';
@@ -508,12 +534,12 @@ class mo_openid_login_wid extends WP_Widget {
 
 	public function select_app( $select_apps, $app_values ) {
 		if ( get_option( 'mo_openid_fonawesome_load' ) == 1 ) {
-			wp_enqueue_style( 'mo-openid-sl-wp-font-awesome', plugins_url( 'includes/css/mo-font-awesome.min.css', __FILE__ ), false );
+			wp_enqueue_style( 'mo-openid-sl-wp-font-awesome', plugins_url( 'includes/css/mo-font-awesome.min.css', __FILE__ ), false, MO_OPENID_SOCIAL_LOGIN_VERSION );
 		}
-		wp_enqueue_style( 'mo-wp-style-icon', plugins_url( 'includes/css/mo_openid_login_icons.css?version=' . MO_OPENID_SOCIAL_LOGIN_VERSION, __FILE__ ), false );
-		wp_enqueue_style( 'mo-wp-bootstrap-social', plugins_url( 'includes/css/bootstrap-social.css', __FILE__ ), false );
+		wp_enqueue_style( 'mo-wp-style-icon', plugins_url( 'includes/css/mo_openid_login_icons.css', __FILE__ ), false, MO_OPENID_SOCIAL_LOGIN_VERSION );
+		wp_enqueue_style( 'mo-wp-bootstrap-social', plugins_url( 'includes/css/bootstrap-social.css', __FILE__ ), false, MO_OPENID_SOCIAL_LOGIN_VERSION );
 		if ( get_option( 'mo_openid_bootstrap_load' ) == 1 ) {
-			wp_enqueue_style( 'mo-wp-bootstrap-main', plugins_url( 'includes/css/bootstrap.min-preview.css', __FILE__ ), false );
+			wp_enqueue_style( 'mo-wp-bootstrap-main', plugins_url( 'includes/css/bootstrap.min-preview.css', __FILE__ ), false, MO_OPENID_SOCIAL_LOGIN_VERSION );
 		}
 
 		$gdpr_setting           = $app_values['gdpr_setting'];
@@ -554,7 +580,11 @@ class mo_openid_login_wid extends WP_Widget {
 	}
 
 	public function check_capp_reg_cust( $customer_register, $custom_app ) {
-		if ( $customer_register == 'no' && $custom_app == 'false' ) {
+		// The miniOrange-hosted pre-configured/broker fallback has been removed (deprecated
+		// API) -- a provider with no custom app credentials configured has no working login
+		// path left at all, regardless of whether the site is registered with miniOrange, so
+		// it must always be disabled rather than only when unregistered.
+		if ( $custom_app == 'false' ) {
 			return 'disable';
 		}
 	}
@@ -568,10 +598,9 @@ class mo_openid_login_wid extends WP_Widget {
 			'yahoo'         => '#430297',
 			'yandex'        => '#2795e9',
 			'linkedin'      => '#007bb6',
-			'linkedin_oidc'      => '#007bb6',
+			'linkedin_oidc' => '#007bb6',
 			'amazon'        => '#ff9900',
 			'paypal'        => '#0d127a',
-			'salesforce'    => '#1ab7ea',
 			'apple'         => '#000000',
 			'steam'         => '#000000',
 			'wordpress'     => '#587ea3',
@@ -619,6 +648,7 @@ class mo_openid_login_wid extends WP_Widget {
 				if ( $app == 'linkedin_oidc' ) {
 					$icon = 'linkedin';
 			   }
+				$app_label = ( $app == 'linkedin_oidc' ) ? 'LinkedIn' : ucfirst( $app );
 
 				if ( $app_name == 'google' ) {
 					if ( $selected_theme == 'longbutton' ) {
@@ -651,7 +681,7 @@ class mo_openid_login_wid extends WP_Widget {
 						if ( $app_dis != 'disable' ) {
 							$html .= " onClick=\"moOpenIdLogin('" . $app . "','" . $custom_app . "');\"";
 						}
-						$html .= "> <i  class='fab fa-" . $icon . "'  style='padding-top:" . ( $customHeight - 35 ) . "px !important; margin-top: 0' src='" . plugins_url( 'includes/images/icons/' . $app . '.png', __FILE__ ) . "'></i>" . $buttonText . ' ' . ucfirst( $app ) . '</a>';
+						$html .= "> <i  class='fab fa-" . $icon . "'  style='padding-top:" . ( $customHeight - 35 ) . "px !important; margin-top: 0' src='" . plugins_url( 'includes/images/icons/' . $app . '.png', __FILE__ ) . "'></i>" . $buttonText . ' ' . $app_label . '</a>';
 					} else {
 						$html .= "<a class='" . $dis . " login-button'  title= ' " . $customTextofTitle . ' ' . $app . "'";
 						if ( $app_dis != 'disable' ) {
@@ -672,22 +702,23 @@ class mo_openid_login_wid extends WP_Widget {
 				if ( $app == 'linkedin_oidc' ) {
 					$icon = 'linkedin';
 			   }
+				$app_label = ( $app == 'linkedin_oidc' ) ? 'LinkedIn' : ucfirst( $app );
 				if ( $selected_theme == 'longbutton' ) {
 					$html .= '<a    ' . $gdpr_setting . '';
 					if ( $app_dis != 'disable' ) {
 						$html .= " onClick=\"moOpenIdLogin('" . $app . "','" . $custom_app . "');\"";
-					}$html .= " style='margin-left: " . $spacebetweenicons . 'px !important;width:' . ( $customWidth ) . ' !important;padding-top:' . ( $customHeight - 29 ) . 'px !important;padding-bottom:' . ( $customHeight - 29 ) . 'px !important;margin-bottom:' . ( $spacebetweenicons - 5 ) . 'px !important; background:#' . $customBackground . '!important;border-radius: ' . $customBoundary . "px !important;'";
+					}$html .= " style='margin-left: " . $spacebetweenicons . 'px !important;width:' . ( $customWidth ) . ' !important;padding-top:' . ( $customHeight - 29 ) . 'px !important;padding-bottom:' . ( $customHeight - 29 ) . 'px !important;margin-bottom:' . ( $spacebetweenicons - 5 ) . 'px !important; background:' . $customBackground . '!important;border-radius: ' . $customBoundary . "px !important;'";
 					if ( $view == 'horizontal' ) {
 						$html .= " class='mo_btn mo_btn-mo mo_btn-block-inline mo_btn-social mo_btn-customtheme mo_btn-custom-dec login-button mo_btn_" . $effectStatus . "'";
 					} else {
 						$html .= " class='mo_btn mo_btn-mo mo_btn-block mo_btn-social mo_btn-customtheme mo_btn-custom-dec login-button mo_btn_" . $effectStatus . "'";
 					}
-					$html .= "> <i style='padding-top:" . ( $customHeight - 35 ) . "px !important' class='fab fa-" . $icon . "'></i> " . $buttonText . ' ' . ucfirst( $app ) . '</a>';
+					$html .= "> <i style='padding-top:" . ( $customHeight - 35 ) . "px !important' class='fab fa-" . $icon . "'></i> " . $buttonText . ' ' . $app_label . '</a>';
 				} else {
 					$html .= "<a class='" . $dis . " login-button' title= ' " . $customTextofTitle . ' ' . $app . "'";
 					if ( $app_dis != 'disable' ) {
 						$html .= " onClick=\"moOpenIdLogin('" . $app . "','" . $custom_app . "');\"";
-					}$html .= " ><i style='margin-top:10px;width:" . $customSize . 'px !important;height:' . $customSize . 'px !important;margin-left:' . ( $spacebetweenicons ) . 'px !important;background:#' . $customBackground . ' !important;font-size: ' . ( $customSize - 16 ) . "px !important;'  class='fab mo_btn-mo fa-" . $icon . ' custom-login-button  mo_btn_' . $effectStatus . '_i  ' . $selected_theme . "' ></i></a>";
+					}$html .= " ><i style='margin-top:10px;width:" . $customSize . 'px !important;height:' . $customSize . 'px !important;margin-left:' . ( $spacebetweenicons ) . 'px !important;background:' . $customBackground . ' !important;font-size: ' . ( $customSize - 16 ) . "px !important;'  class='fab mo_btn-mo fa-" . $icon . ' custom-login-button  mo_btn_' . $effectStatus . '_i  ' . $selected_theme . "' ></i></a>";
 				}
 				return $html;
 			}
@@ -702,6 +733,7 @@ class mo_openid_login_wid extends WP_Widget {
 				if ( $app == 'linkedin_oidc' ) {
 					$icon = 'linkedin';
 			   }
+				$app_label = ( $app == 'linkedin_oidc' ) ? 'LinkedIn' : ucfirst( $app );
 				if ( $selected_theme == 'longbutton' ) {
 					$html .= '<a  ' . $gdpr_setting . '';
 					if ( $app_dis != 'disable' ) {
@@ -715,9 +747,9 @@ class mo_openid_login_wid extends WP_Widget {
 					if ( $app_dis != 'disable' ) {
 						$html .= " onClick=\"moOpenIdLogin('" . $app . "','" . $custom_app . "');\"";
 					}
-					$html .= "> <i style='color:" . $default_color[ $app ] . '; border-right:#ffffff; padding-top:' . ( $customHeight - 35 ) . "px !important;' class='fab fa-" . $icon . "'></i>" . $buttonText . ' ' . ucfirst( $app ) . '</a>';
+					$html .= "> <i style='color:" . $default_color[ $app ] . '; border-right:#ffffff; padding-top:' . ( $customHeight - 35 ) . "px !important;' class='fab fa-" . $icon . "'></i>" . $buttonText . ' ' . $app_label . '</a>';
 				} else {
-					$html .= "<a class='" . $dis . " login-button' title= ' " . $customTextofTitle . ' ' . ucfirst( $app ) . "'";
+					$html .= "<a class='" . $dis . " login-button' title= ' " . $customTextofTitle . ' ' . $app_label . "'";
 					if ( $app_dis != 'disable' ) {
 						$html .= " onClick=\"moOpenIdLogin('" . $app . "','" . $custom_app . "');\"";
 					} $html .= " title= ' " . $customTextofTitle . '  ' . $app . "'><i style='background:white;margin-top:10px;text-align:center;padding:7px 0px 1px 0px;box-sizing:initial;width:" . $customSize . 'px !important;height:' . ( $customSize - 8 ) . 'px !important;margin-left:' . ( $spacebetweenicons ) . 'px !important;color:' . $default_color[ $app ] . ' !important;font-size: ' . ( $customSize - 14 ) . "px !important;border: 1px solid black;'  class='fab fa-" . $icon . ' mo_btn-mo  mo_btn_' . $effectStatus . '_i  ' . $selected_theme . "' ></i></a>";
@@ -735,6 +767,7 @@ class mo_openid_login_wid extends WP_Widget {
 				if ( $app == 'linkedin_oidc' ) {
 					$icon = 'linkedin';
 			   }
+				$app_label = ( $app == 'linkedin_oidc' ) ? 'LinkedIn' : ucfirst( $app );
 				if ( $selected_theme == 'longbutton' ) {
 					$html .= '<a ' . $gdpr_setting . " style='border-color:#000000; margin-left: " . $spacebetweenicons . 'px !important;width: ' . $customWidth . ' !important;padding-top:' . ( $customHeight - 29 ) . 'px !important;padding-bottom:' . ( $customHeight - 29 ) . 'px !important;margin-bottom: ' . ( $spacebetweenicons - 5 ) . 'px !important;border-radius: ' . $customBoundary . "px !important;'";
 					if ( $view == 'horizontal' ) {
@@ -743,12 +776,12 @@ class mo_openid_login_wid extends WP_Widget {
 						$html .= " class='mo_btn mo_btn-mo mo_btn-block mo_btn-social mo_btn-" . $icon . '-hov mo_openid_mo_btn-custom-dec login-button mo_btn_' . $effectStatus . "'";
 					}
 					$html .= " onClick=\"moOpenIdLogin('" . $app . "','" . $custom_app . "');\"";
-					$html .= "> <i style='color: " . $default_color[ $app ] . '; border-right:#ffffff; padding-top:' . ( $customHeight - 35 ) . "px !important' class='fab fa-" . $icon . "'></i>" . $buttonText . ' ' . ucfirst( $app_name ) . '</a>';
+					$html .= "> <i style='color: " . $default_color[ $app ] . '; border-right:#ffffff; padding-top:' . ( $customHeight - 35 ) . "px !important' class='fab fa-" . $icon . "'></i>" . $buttonText . ' ' . $app_label . '</a>';
 				} else {
-					$html .= "<a class='" . $dis . " login-button' title= ' " . $customTextofTitle . ' ' . ucfirst( $app ) . "'";
+					$html .= "<a class='" . $dis . " login-button' title= ' " . $customTextofTitle . ' ' . $app_label . "'";
 					if ( $app_dis != 'disable' ) {
 						$html .= " onClick=\"moOpenIdLogin('" . $app . "','" . $custom_app . "');\"";
-					} $html .= " title= ' " . $customTextofTitle . ' ' . ucfirst( $app ) . "'><i style='background:white;margin-top:10px;text-align:center;padding:7px 0px 1px 0px;box-sizing:initial;width:" . $customSize . 'px !important;height:' . ( $customSize - 8 ) . 'px !important;margin-left:' . ( $spacebetweenicons ) . 'px !important;color:' . $default_color[ $app ] . ';font-size: ' . ( $customSize - 14 ) . "px !important;border: 1px solid black;'  class='fab fa-" . $icon . ' mo_openid_i' . $icon . '-hov mo_btn_' . $effectStatus . '_i   ' . $selected_theme . "' ></i></a>";
+					} $html .= " title= ' " . $customTextofTitle . ' ' . $app_label . "'><i style='background:white;margin-top:10px;text-align:center;padding:7px 0px 1px 0px;box-sizing:initial;width:" . $customSize . 'px !important;height:' . ( $customSize - 8 ) . 'px !important;margin-left:' . ( $spacebetweenicons ) . 'px !important;color:' . $default_color[ $app ] . ';font-size: ' . ( $customSize - 14 ) . "px !important;border: 1px solid black;'  class='fab fa-" . $icon . ' mo_openid_i' . $icon . '-hov mo_btn_' . $effectStatus . '_i   ' . $selected_theme . "' ></i></a>";
 				}
 				return $html;
 			}
@@ -763,23 +796,24 @@ class mo_openid_login_wid extends WP_Widget {
 				if ( $app == 'linkedin_oidc' ) {
 					$icon = 'linkedin';
 			   }
+				$app_label = ( $app == 'linkedin_oidc' ) ? 'LinkedIn' : ucfirst( $app );
 				if ( $selected_theme == 'longbutton' ) {
 					$html .= '<a  ' . $gdpr_setting . ''; if ( $app_dis != 'disable' ) {
-						$html .= " onMouseOver=\"this.style.color= 'white';this.style.background= '#" . $customHoverBackground . "';\"
-        onMouseOut=\"this.style.color= '#" . $customHoverBackground . "';this.style.background= 'white';\" onClick=\"moOpenIdLogin('" . $app . "','" . $custom_app . "');\"";
-					}$html .= " style='background:white; margin-left: " . $spacebetweenicons . 'px !important;width:' . ( $customWidth ) . ' !important;padding-top:' . ( $customHeight - 29 ) . 'px !important;padding-bottom:' . ( $customHeight - 29 ) . 'px !important;margin-bottom:' . ( $spacebetweenicons - 5 ) . 'px !important; color:#' . $customHoverBackground . ';border-color:#' . $customHoverBackground . '!important;border-radius: ' . $customBoundary . "px !important;'";
+						$html .= " onMouseOver=\"this.style.color= 'white';this.style.background= '" . $customHoverBackground . "';\"
+        onMouseOut=\"this.style.color= '" . $customHoverBackground . "';this.style.background= 'white';\" onClick=\"moOpenIdLogin('" . $app . "','" . $custom_app . "');\"";
+					}$html .= " style='background:white; margin-left: " . $spacebetweenicons . 'px !important;width:' . ( $customWidth ) . ' !important;padding-top:' . ( $customHeight - 29 ) . 'px !important;padding-bottom:' . ( $customHeight - 29 ) . 'px !important;margin-bottom:' . ( $spacebetweenicons - 5 ) . 'px !important; color:' . $customHoverBackground . ';border-color:' . $customHoverBackground . '!important;border-radius: ' . $customBoundary . "px !important;'";
 					if ( $view == 'horizontal' ) {
 						$html .= " class='mo_btn mo_btn-mo mo_btn-block-inline mo_btn-social  mo_openid_mo_btn-custom-dec login-button mo_btn_" . $effectStatus . " '";
 					} else {
 						$html .= " class='mo_btn mo_btn-mo mo_btn-block mo_btn-social mo_openid_mo_btn-custom-dec login-button mo_btn_" . $effectStatus . "'";
 					}
-					$html .= "> <i style='padding-top:" . ( $customHeight - 35 ) . "px !important' class='fab fa-" . $icon . "'></i> " . $buttonText . ' ' . ucfirst( $app ) . '</a>';
+					$html .= "> <i style='padding-top:" . ( $customHeight - 35 ) . "px !important' class='fab fa-" . $icon . "'></i> " . $buttonText . ' ' . $app_label . '</a>';
 				} else {
-					$html .= "<a class='" . $dis . " login-button' title= ' " . $customTextofTitle . ' ' . ucfirst( $app ) . "'";
+					$html .= "<a class='" . $dis . " login-button' title= ' " . $customTextofTitle . ' ' . $app_label . "'";
 					if ( $app_dis != 'disable' ) {
 						$html .= " onClick=\"moOpenIdLogin('" . $app . "','" . $custom_app . "');\"";
 					}
-					$html .= " title= ' " . $customTextofTitle . ' ' . ucfirst( $app ) . "'><i onMouseOver=\"this.style.color= 'white';this.style.background= '#" . $customHoverBackground . "';\" onMouseOut=\"this.style.color= '#" . $customHoverBackground . "';this.style.background= 'white';\"  style='background:white;margin-top:10px;text-align:center;padding:7px 0px 1px 0px;box-sizing:initial;width:" . $customSize . 'px !important;height:' . ( $customSize - 8 ) . 'px !important;margin-left:' . ( $spacebetweenicons ) . 'px !important;color:#' . $customHoverBackground . ';font-size: ' . ( $customSize - 14 ) . 'px !important;border: 1px solid #' . $customHoverBackground . ";'  class='fab fa-" . $icon . '  ' . $selected_theme . '  mo_btn_' . $effectStatus . "_i  ' ></i></a>";
+					$html .= " title= ' " . $customTextofTitle . ' ' . $app_label . "'><i onMouseOver=\"this.style.color= 'white';this.style.background= '" . $customHoverBackground . "';\" onMouseOut=\"this.style.color= '" . $customHoverBackground . "';this.style.background= 'white';\"  style='background:white;margin-top:10px;text-align:center;padding:7px 0px 1px 0px;box-sizing:initial;width:" . $customSize . 'px !important;height:' . ( $customSize - 8 ) . 'px !important;margin-left:' . ( $spacebetweenicons ) . 'px !important;color:' . $customHoverBackground . ';font-size: ' . ( $customSize - 14 ) . 'px !important;border: 1px solid ' . $customHoverBackground . ";'  class='fab fa-" . $icon . '  ' . $selected_theme . '  mo_btn_' . $effectStatus . "_i  ' ></i></a>";
 				}
 				return $html;
 			}
@@ -793,22 +827,23 @@ class mo_openid_login_wid extends WP_Widget {
 				if ( $app == 'linkedin_oidc' ) {
 					$icon = 'linkedin';
 			   }
+				$app_label = ( $app == 'linkedin_oidc' ) ? 'LinkedIn' : ucfirst( $app );
 				if ( $selected_theme == 'longbutton' ) {
 					$html .= '<a ' . $gdpr_setting . '';
 					if ( $app_dis != 'disable' ) {
 						$html .= " onClick=\"moOpenIdLogin('" . $app . "','" . $custom_app . "');\"";
-					}$html .= " style='color:#ffffff;background:linear-gradient(90deg,#$customSmartBackground1,#$customSmartBackground2);margin-left: " . $spacebetweenicons . 'px !important;width:' . ( $customWidth ) . ' !important;padding-top:' . ( $customHeight - 29 ) . 'px !important;padding-bottom:' . ( $customHeight - 29 ) . 'px !important;margin-bottom:' . ( $spacebetweenicons - 5 ) . 'px !important; border-radius: ' . $customBoundary . "px !important;'";
+					}$html .= " style='color:#ffffff;background:linear-gradient(90deg,$customSmartBackground1,$customSmartBackground2);margin-left: " . $spacebetweenicons . 'px !important;width:' . ( $customWidth ) . ' !important;padding-top:' . ( $customHeight - 29 ) . 'px !important;padding-bottom:' . ( $customHeight - 29 ) . 'px !important;margin-bottom:' . ( $spacebetweenicons - 5 ) . 'px !important; border-radius: ' . $customBoundary . "px !important;'";
 					if ( $view == 'horizontal' ) {
 						$html .= " class='mo_btn_smart mo_btn-mo mo_btn-block-inline mo_btn-social mo_openid_mo_btn-customtheme mo_openid_mo_btn-custom-dec login-button mo_btn_" . $effectStatus . "'";
 					} else {
 						$html .= " class='mo_btn_smart mo_btn-mo mo_btn-block mo_btn-social mo_openid_mo_btn-customtheme mo_openid_mo_btn-custom-dec login-button mo_btn_" . $effectStatus . "'";
 					}
-					$html .= "> <i style='padding-top:" . ( $customHeight - 35 ) . "px !important;' class='fab fa-" . $icon . "'></i> " . $buttonText . ' ' . ucfirst( $app ) . '</a>';
+					$html .= "> <i style='padding-top:" . ( $customHeight - 35 ) . "px !important;' class='fab fa-" . $icon . "'></i> " . $buttonText . ' ' . $app_label . '</a>';
 				} else {
-					$html .= "<a class='" . $dis . " login-button' title= ' " . $customTextofTitle . ' ' . ucfirst( $app ) . "'";
+					$html .= "<a class='" . $dis . " login-button' title= ' " . $customTextofTitle . ' ' . $app_label . "'";
 					if ( $app_dis != 'disable' ) {
 						$html .= " onClick=\"moOpenIdLogin('" . $app . "','" . $custom_app . "');\"";
-					}$html .= " ><i style='margin-top:10px;text-align:center;padding:7px 0px 1px 0px;box-sizing:initial;width:" . $customSize . 'px !important;height:' . ( $customSize - 8 ) . 'px !important;margin-left:' . ( $spacebetweenicons + 4 ) . "px !important; background:linear-gradient(90deg,#$customSmartBackground1,#$customSmartBackground2)!important;font-size: " . ( $customSize - 16 ) . "px !important;color:white'  class='fab mo_btn-mo fa-" . $icon . ' mo_openid_custom-login-button mo_button_smart_i mo_btn_' . $effectStatus . '_i ' . $selected_theme . "' ></i></a>";
+					}$html .= " ><i style='margin-top:10px;text-align:center;padding:7px 0px 1px 0px;box-sizing:initial;width:" . $customSize . 'px !important;height:' . ( $customSize - 8 ) . 'px !important;margin-left:' . ( $spacebetweenicons + 4 ) . "px !important; background:linear-gradient(90deg,$customSmartBackground1,$customSmartBackground2)!important;font-size: " . ( $customSize - 16 ) . "px !important;color:white'  class='fab mo_btn-mo fa-" . $icon . ' mo_openid_custom-login-button mo_button_smart_i mo_btn_' . $effectStatus . '_i ' . $selected_theme . "' ></i></a>";
 				}
 				return $html;
 			}
@@ -817,7 +852,7 @@ class mo_openid_login_wid extends WP_Widget {
 	}
 
 	private function mo_openid_load_login_script() {
-		wp_enqueue_script( 'js-cookie-script', plugins_url( 'includes/js/mo_openid_jquery.cookie.min.js', __FILE__ ), array( 'jquery' ) );
+		wp_enqueue_script( 'js-cookie-script', plugins_url( 'includes/js/mo_openid_jquery.cookie.min.js', __FILE__ ), array( 'jquery' ), MO_OPENID_SOCIAL_LOGIN_VERSION, true );
 		if ( ! get_option( 'mo_openid_gdpr_consent_enable' ) ) {
 			?>
 			<script>
@@ -870,40 +905,23 @@ class mo_openid_login_wid extends WP_Widget {
 				}
 				?>
 				var base_url = '<?php echo esc_url( site_url() ); ?>';
-				var request_uri = '<?php echo esc_attr( sanitize_text_field( $_SERVER['REQUEST_URI'] ) ); ?>';
+				var request_uri = '<?php echo esc_js( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ); ?>';
 				var http = '<?php echo esc_attr( $http ); ?>';
-				var http_host = '<?php echo esc_attr( sanitize_text_field( $_SERVER['HTTP_HOST'] ) ); ?>';
-				var default_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-get-social-login-nonce' ) ); ?>';
+				var http_host = '<?php echo esc_js( isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '' ); ?>';
 				var custom_nonce = '<?php echo esc_attr( wp_create_nonce( 'mo-openid-oauth-app-nonce' ) ); ?>';
-				if(is_custom_app == 'false'){
-					if ( request_uri.indexOf('wp-login.php') !=-1){
-						var redirect_url = base_url + '/?option=getmosociallogin&wp_nonce=' + default_nonce + '&app_name=';
-
-					}else {
-						var redirect_url = http + http_host + request_uri;
-						if(redirect_url.indexOf('?') != -1){
-							redirect_url = redirect_url +'&option=getmosociallogin&wp_nonce=' + default_nonce + '&app_name=';
-						}
-						else
-						{
-							redirect_url = redirect_url +'?option=getmosociallogin&wp_nonce=' + default_nonce + '&app_name=';
-						}
-					}
-
-				}
-				else {
-					if ( request_uri.indexOf('wp-login.php') !=-1){
-						var redirect_url = base_url + '/?option=oauthredirect&wp_nonce=' + custom_nonce + '&app_name=';
-
-
-					}else {
-						var redirect_url = http + http_host + request_uri;
-						if(redirect_url.indexOf('?') != -1)
-							redirect_url = redirect_url +'&option=oauthredirect&wp_nonce=' + custom_nonce + '&app_name=';
-						else
-							redirect_url = redirect_url +'?option=oauthredirect&wp_nonce=' + custom_nonce + '&app_name=';
-					}
-
+				// The miniOrange-hosted pre-configured/broker login (?option=getmosociallogin) has
+				// been removed (deprecated API) -- every enabled provider now goes through the
+				// custom-app OAuth flow, which requires the admin to have configured their own app
+				// credentials (buttons for providers without one are disabled server-side, see
+				// check_capp_reg_cust()).
+				if ( request_uri.indexOf('wp-login.php') !=-1){
+					var redirect_url = base_url + '/?option=oauthredirect&wp_nonce=' + custom_nonce + '&app_name=';
+				}else {
+					var redirect_url = http + http_host + request_uri;
+					if(redirect_url.indexOf('?') != -1)
+						redirect_url = redirect_url +'&option=oauthredirect&wp_nonce=' + custom_nonce + '&app_name=';
+					else
+						redirect_url = redirect_url +'?option=oauthredirect&wp_nonce=' + custom_nonce + '&app_name=';
 				}
 				if( <?php echo esc_attr( get_option( 'mo_openid_popup_window' ) ); ?>) {
 					var myWindow = window.open(redirect_url + app_name, "", "width=700,height=620");
@@ -927,7 +945,7 @@ class mo_openid_sharing_hor_wid extends WP_Widget {
 			'mo_openid_sharing_hor_wid',
 			'miniOrange Sharing - Horizontal',
 			array(
-				'description'                 => __( 'Share using horizontal widget. Lets you share with Social Apps like Google, Facebook, LinkedIn, Pinterest, Reddit.', 'flw' ),
+				'description'                 => __( 'Share using horizontal widget. Lets you share with Social Apps like Google, Facebook, LinkedIn, Pinterest, Reddit.', 'miniorange-login-openid' ),
 				'customize_selective_refresh' => true,
 			)
 		);
@@ -966,14 +984,14 @@ class mo_openid_sharing_hor_wid extends WP_Widget {
 
 	public function update( $new_instance, $old_instance ) {
 		$instance              = array();
-		$instance['wid_title'] = strip_tags( $new_instance['wid_title'] );
+		$instance['wid_title'] = wp_strip_all_tags( $new_instance['wid_title'] );
 		return $instance;
 	}
 
 	public function show_sharing_buttons_horizontal() {
 		global $post;
 		$title        = str_replace( '+', '%20', urlencode( $post->post_title ) );
-		$content      = strip_shortcodes( strip_tags( get_the_content() ) );
+		$content      = strip_shortcodes( wp_strip_all_tags( get_the_content() ) );
 		$post_content = $content;
 		$excerpt      = '';
 		$landscape    = 'horizontal';
@@ -993,7 +1011,7 @@ class mo_openid_sharing_ver_wid extends WP_Widget {
 			'mo_openid_sharing_ver_wid',
 			'miniOrange Sharing - Vertical',
 			array(
-				'description'                 => __( 'Share using a vertical floating widget. Lets you share with Social Apps like Google, Facebook, LinkedIn, Pinterest, Reddit.', 'flw' ),
+				'description'                 => __( 'Share using a vertical floating widget. Lets you share with Social Apps like Google, Facebook, LinkedIn, Pinterest, Reddit.', 'miniorange-login-openid' ),
 				'customize_selective_refresh' => true,
 			)
 		);
@@ -1027,7 +1045,7 @@ class mo_openid_sharing_ver_wid extends WP_Widget {
 	/*Called when user changes configuration in Widget Admin Panel*/
 	public function update( $new_instance, $old_instance ) {
 		$instance                 = $old_instance;
-		$instance['wid_title']    = strip_tags( $new_instance['wid_title'] );
+		$instance['wid_title']    = wp_strip_all_tags( $new_instance['wid_title'] );
 		$instance['alignment']    = $new_instance['alignment'];
 		$instance['left_offset']  = $new_instance['left_offset'];
 		$instance['right_offset'] = $new_instance['right_offset'];
@@ -1044,7 +1062,7 @@ class mo_openid_sharing_ver_wid extends WP_Widget {
 		} else {
 			$title = get_bloginfo( 'name' );
 		}
-		$content      = strip_shortcodes( strip_tags( get_the_content() ) );
+		$content      = strip_shortcodes( wp_strip_all_tags( get_the_content() ) );
 		$post_content = $content;
 		$excerpt      = '';
 		$landscape    = 'vertical';
@@ -1110,15 +1128,16 @@ function mo_openid_disabled_register_message() {
 }
 
 function mo_openid_get_redirect_url() {
-	$current_url = isset( $_COOKIE['redirect_current_url'] ) ? sanitize_text_field( $_COOKIE['redirect_current_url'] ) : get_option( 'siteurl' );
-	$pos         = strpos( sanitize_text_field( $_SERVER['REQUEST_URI'] ), '/openidcallback' );
+	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+	$current_url = isset( $_COOKIE['redirect_current_url'] ) ? sanitize_text_field( wp_unslash( $_COOKIE['redirect_current_url'] ) ) : get_option( 'siteurl' );
+	$pos         = strpos( $request_uri, '/openidcallback' );
 
 	if ( $pos === false ) {
-		$url         = str_replace( '?option=moopenid', '', sanitize_text_field( $_SERVER['REQUEST_URI'] ) );
+		$url         = str_replace( '?option=moopenid', '', $request_uri );
 		$current_url = str_replace( '?option=moopenid', '', $current_url );
 
 	} else {
-		$temp_array1 = explode( '/openidcallback', sanitize_text_field( $_SERVER['REQUEST_URI'] ) );
+		$temp_array1 = explode( '/openidcallback', $request_uri );
 		$url         = $temp_array1[0];
 		$temp_array2 = explode( '/openidcallback', $current_url );
 		$current_url = $temp_array2[0];
@@ -1132,7 +1151,13 @@ function mo_openid_get_redirect_url() {
 			if ( strpos( $current_url, get_option( 'siteurl' ) . '/wp-login.php' ) !== false ) {
 				$redirect_url = get_option( 'siteurl' );
 			} else {
-				$redirect_url = $current_url;
+				// $current_url comes from the client-writable redirect_current_url cookie, so it
+				// cannot be trusted as a redirect target as-is -- validate its host against this
+				// site (falling back to siteurl otherwise) the same way wp_safe_redirect() would,
+				// so a planted off-site cookie value can't send a just-logged-in user anywhere but
+				// this site while still honoring the admin's "redirect to same page" setting for
+				// every legitimate value.
+				$redirect_url = wp_validate_redirect( $current_url, get_option( 'siteurl' ) );
 			}
 		} else {
 			if ( isset( $_SERVER['HTTPS'] ) && ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] != 'off' ) {
@@ -1140,8 +1165,9 @@ function mo_openid_get_redirect_url() {
 			} else {
 				$http = 'http://';
 			}
-			$redirect_url = urldecode( html_entity_decode( esc_url( $http . sanitize_text_field( $_SERVER['HTTP_HOST'] ) . $url ) ) );
-			if ( html_entity_decode( esc_url( remove_query_arg( 'ss_message', $redirect_url ) ) ) == wp_login_url() || strpos( sanitize_text_field( $_SERVER['REQUEST_URI'] ), 'wp-login.php' ) !== false || strpos( sanitize_text_field( $_SERVER['REQUEST_URI'] ), 'wp-admin' ) !== false ) {
+			$http_host    = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+			$redirect_url = urldecode( html_entity_decode( esc_url( $http . $http_host . $url ) ) );
+			if ( html_entity_decode( esc_url( remove_query_arg( 'ss_message', $redirect_url ) ) ) === wp_login_url() || strpos( $request_uri, 'wp-login.php' ) !== false || strpos( $request_uri, 'wp-admin' ) !== false ) {
 				$redirect_url = site_url() . '/';
 			}
 		}
@@ -1175,7 +1201,9 @@ function mo_openid_redirect_after_logout( $logout_url ) {
 			} else {
 				$http = 'http://';
 			}
-			$redirect_url = $logout_url . '&redirect_to=' . $http . sanitize_text_field( $_SERVER['HTTP_HOST'] ) . sanitize_text_field( $_SERVER['REQUEST_URI'] );
+			$http_host    = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
+			$request_uri  = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+			$redirect_url = $logout_url . '&redirect_to=' . $http . $http_host . $request_uri;
 		} elseif ( $logout_redirect_option == 'login' ) {
 			$redirect_url = $logout_url . '&redirect_to=' . site_url() . '/wp-admin';
 		} elseif ( $logout_redirect_option == 'custom' ) {
@@ -1190,7 +1218,8 @@ function mo_openid_redirect_after_logout( $logout_url ) {
 
 function mo_openid_login_validate() {
 
-	$present_time_rateus_pop = date( 'Y-m-d' );
+	$mo_request_uri          = isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '';
+	$present_time_rateus_pop = gmdate( 'Y-m-d' );
 	if ( get_option( 'check_ten_rate_us' ) < 5 ) {
 		if ( get_option( 'mo_openid_user_activation_date' ) < $present_time_rateus_pop ) {
 			update_option( 'mo_openid_rateus_activation', '1' );
@@ -1198,24 +1227,15 @@ function mo_openid_login_validate() {
 		}
 	}
 
-	if ( isset( $_REQUEST['option'] ) and strpos( sanitize_text_field($_REQUEST['option']), 'getmosociallogin' ) !== false ) { 	// phpcs:ignore 
-		if ( isset( $_REQUEST['wp_nonce'] ) ) {
-			$nonce = sanitize_text_field( $_REQUEST['wp_nonce'] );
-			if ( ! wp_verify_nonce( $nonce, 'mo-openid-get-social-login-nonce' ) ) {
-				wp_die( '<strong>ERROR WPSL01</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
-			} else {
-				mo_openid_initialize_social_login();
-			}
-		}
-	} elseif ( isset( $_POST['mo_openid_go_back_registration_nonce'] ) and isset( $_POST['option'] ) and $_POST['option'] == 'mo_openid_go_back_registration' ) {
-		$nonce = sanitize_text_field( $_POST['mo_openid_go_back_registration_nonce'] );
+	if ( isset( $_POST['mo_openid_go_back_registration_nonce'] ) and isset( $_POST['option'] ) and $_POST['option'] == 'mo_openid_go_back_registration' ) {
+		$nonce = isset( $_POST['mo_openid_go_back_registration_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_go_back_registration_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mo-openid-go-back-register-nonce' ) ) {
 			wp_die( '<strong>ERROR WPSL02</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 		} else {
 			update_option( 'mo_openid_verify_customer', 'true' );
 		}
-	} elseif ( isset( $_POST['mo_openid_custom_form_submitted_nonce'] ) and isset( $_POST['username'] ) and $_POST['option'] == 'mo_openid_custom_form_submitted' ) {
-		$nonce = sanitize_text_field( $_POST['mo_openid_custom_form_submitted_nonce'] );
+	} elseif ( isset( $_POST['mo_openid_custom_form_submitted_nonce'] ) and isset( $_POST['username'] ) and isset( $_POST['option'] ) and $_POST['option'] == 'mo_openid_custom_form_submitted' ) {
+		$nonce = isset( $_POST['mo_openid_custom_form_submitted_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_custom_form_submitted_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mo-openid-custom-form-submitted-nonce' ) ) {
 			wp_die( '<strong>ERROR</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 		} else {
@@ -1226,20 +1246,20 @@ function mo_openid_login_validate() {
 				header( 'Location:' . get_option( 'profile_completion_page' ) );
 				exit;
 			}
-			$user_picture       = sanitize_text_field( $_POST['user_picture'] );
-			$user_url           = sanitize_text_field( $_POST['user_url'] );
-			$last_name          = sanitize_text_field( $_POST['last_name'] );
-			$username           = sanitize_text_field( $_POST['username'] );
-			$user_email         = sanitize_text_field( $_POST['user_email'] );
-			$random_password    = sanitize_text_field( $_POST['random_password'] );
-			$user_full_name     = sanitize_text_field( $_POST['user_full_name'] );
-			$first_name         = sanitize_text_field( $_POST['first_name'] );
-			$decrypted_app_name = sanitize_text_field( $_POST['decrypted_app_name'] );
-			$decrypted_user_id  = sanitize_text_field( $_POST['decrypted_user_id'] );
-			$call               = sanitize_text_field( $_POST['call'] );
-			$user_profile_url   = sanitize_text_field( $_POST['user_profile_url'] );
-			$social_app_name    = sanitize_text_field( $_POST['social_app_name'] );
-			$social_user_id     = sanitize_text_field( $_POST['social_user_id'] );
+			$user_picture       = ( isset( $_POST['user_picture'] ) ? sanitize_text_field( wp_unslash( $_POST['user_picture'] ) ) : '' );
+			$user_url           = ( isset( $_POST['user_url'] ) ? sanitize_text_field( wp_unslash( $_POST['user_url'] ) ) : '' );
+			$last_name          = ( isset( $_POST['last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['last_name'] ) ) : '' );
+			$username           = ( isset( $_POST['username'] ) ? sanitize_text_field( wp_unslash( $_POST['username'] ) ) : '' );
+			$user_email         = ( isset( $_POST['user_email'] ) ? sanitize_text_field( wp_unslash( $_POST['user_email'] ) ) : '' );
+			$random_password    = ( isset( $_POST['random_password'] ) ? sanitize_text_field( wp_unslash( $_POST['random_password'] ) ) : '' );
+			$user_full_name     = ( isset( $_POST['user_full_name'] ) ? sanitize_text_field( wp_unslash( $_POST['user_full_name'] ) ) : '' );
+			$first_name         = ( isset( $_POST['first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['first_name'] ) ) : '' );
+			$decrypted_app_name = ( isset( $_POST['decrypted_app_name'] ) ? sanitize_text_field( wp_unslash( $_POST['decrypted_app_name'] ) ) : '' );
+			$decrypted_user_id  = ( isset( $_POST['decrypted_user_id'] ) ? sanitize_text_field( wp_unslash( $_POST['decrypted_user_id'] ) ) : '' );
+			$call               = ( isset( $_POST['call'] ) ? sanitize_text_field( wp_unslash( $_POST['call'] ) ) : '' );
+			$user_profile_url   = ( isset( $_POST['user_profile_url'] ) ? sanitize_text_field( wp_unslash( $_POST['user_profile_url'] ) ) : '' );
+			$social_app_name    = ( isset( $_POST['social_app_name'] ) ? sanitize_text_field( wp_unslash( $_POST['social_app_name'] ) ) : '' );
+			$social_user_id     = ( isset( $_POST['social_user_id'] ) ? sanitize_text_field( wp_unslash( $_POST['social_user_id'] ) ) : '' );
 
 			$userdata = array(
 				'user_login'   => $username,
@@ -1252,16 +1272,34 @@ function mo_openid_login_validate() {
 			);
 
 			// Checking if username already exist
-			$user_name_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_login = %s", $userdata['user_login'] ) );
+			$mo_cache_key       = mo_openid_cache_key( 'wp_user_id_by_login:' . $userdata['user_login'] );
+			$mo_cache_found     = false;
+			$user_name_user_id  = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+			if ( false === $mo_cache_found ) {
+				$user_name_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_login = %s", $userdata['user_login'] ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- checking wp_users for an existing login; cached below via wp_cache_set().
+				wp_cache_set( $mo_cache_key, $user_name_user_id, MO_OPENID_CACHE_GROUP, 60 );
+			}
 
 			if ( isset( $user_name_user_id ) ) {
 				$email_array       = explode( '@', $user_email );
 				$user_name         = $email_array[0];
-				$user_name_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_login = %s", $user_name ) );
+				$mo_cache_key       = mo_openid_cache_key( 'wp_user_id_by_login:' . $user_name );
+				$mo_cache_found     = false;
+				$user_name_user_id  = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+				if ( false === $mo_cache_found ) {
+					$user_name_user_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->users where user_login = %s", $user_name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- checking wp_users for an existing login; cached below via wp_cache_set().
+					wp_cache_set( $mo_cache_key, $user_name_user_id, MO_OPENID_CACHE_GROUP, 60 );
+				}
 				$i                 = 1;
 				while ( ! empty( $user_name_user_id ) ) {
 					$uname             = $user_name . '_' . $i;
-					$user_name_user_id = $wpdb->get_var( $wpdb->prepare( 'SELECT ID FROM ' . $wpdb->prefix . 'users where user_login = %s', $uname ) );
+					$mo_cache_key       = mo_openid_cache_key( 'wp_user_id_by_login:' . $uname );
+					$mo_cache_found     = false;
+					$user_name_user_id  = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+					if ( false === $mo_cache_found ) {
+						$user_name_user_id = $wpdb->get_var( $wpdb->prepare( 'SELECT ID FROM ' . $wpdb->prefix . 'users where user_login = %s', $uname ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- checking wp_users for an existing login; cached below via wp_cache_set().
+						wp_cache_set( $mo_cache_key, $user_name_user_id, MO_OPENID_CACHE_GROUP, 60 );
+					}
 					$i++;
 					if ( empty( $user_name_user_id ) ) {
 						$userdata['user_login'] = $uname;
@@ -1281,8 +1319,7 @@ function mo_openid_login_validate() {
 
 			$user_id = wp_insert_user( $userdata );
 			if ( is_wp_error( $user_id ) ) {
-				print_r( $user_id );
-				wp_die( 'Error Code ' . esc_attr( $call ) . ': ' . esc_attr( get_option( 'mo_registration_error_message' ) ) );
+				wp_die( 'Error Code ' . esc_attr( $call ) . ': ' . esc_attr( get_option( 'mo_registration_error_message' ) ) . ' ' . esc_html( $user_id->get_error_message() ) );
 			}
 
 			update_option( 'mo_openid_user_count', get_option( 'mo_openid_user_count' ) + 1 );
@@ -1311,11 +1348,17 @@ function mo_openid_login_validate() {
 			// registration hook
 			do_action( 'mo_user_register', $user_id, $user_profile_url );
 			mo_openid_link_account( $user->user_login, $user );
-			$linked_email_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_social_app = %s AND identifier = %s', $appname, $social_user_id ) );
+			$mo_cache_key       = mo_openid_cache_key( 'linked_user_by_app_identifier:' . $appname . '|' . $social_user_id );
+			$mo_cache_found     = false;
+			$linked_email_id    = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+			if ( false === $mo_cache_found ) {
+				$linked_email_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_social_app = %s AND identifier = %s', $appname, $social_user_id ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- custom plugin table; cached below via wp_cache_set().
+				wp_cache_set( $mo_cache_key, $linked_email_id, MO_OPENID_CACHE_GROUP, 60 );
+			}
 			mo_openid_login_user( $linked_email_id, $user_id, $user, $user_picture, 0 );
 		}
 	} elseif ( isset( $_POST['mo_openid_profile_form_submitted_nonce'] ) and isset( $_POST['option'] ) and $_POST['option'] == 'mo_openid_profile_form_submitted' ) {
-		$nonce = sanitize_text_field( $_POST['mo_openid_profile_form_submitted_nonce'] );
+		$nonce = isset( $_POST['mo_openid_profile_form_submitted_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_profile_form_submitted_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mo-openid-profile-form-submitted-nonce' ) ) {
 			wp_die( '<strong>ERROR WPSL03</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 		} else {
@@ -1324,24 +1367,24 @@ function mo_openid_login_validate() {
 				wp_die( esc_html__( 'Invalid request. Please initiate login from the social login button.', 'miniorange-login-openid' ) );
 			}
 			$oauth_email = isset( $_SESSION['user_email'] ) ? sanitize_email( $_SESSION['user_email'] ) : '';
-			$user_email  = sanitize_email( $_POST['email_field'] );
+			$user_email  = ( isset( $_POST['email_field'] ) ? sanitize_email( wp_unslash( $_POST['email_field'] ) ) : '' );
 			// If OAuth provided an email, the submitted email must match it exactly.
 			// This prevents an attacker from substituting any target email in the profile form.
 			if ( ! empty( $oauth_email ) && ! hash_equals( $oauth_email, $user_email ) ) {
 				wp_die( '<strong>ERROR</strong>: The email you submitted does not match your social account.' );
 			}
-			$username           = sanitize_text_field( $_POST['username_field'] );
-			$user_picture       = sanitize_text_field( $_POST['user_picture'] );
-			$user_url           = sanitize_text_field( $_POST['user_url'] );
-			$last_name          = sanitize_text_field( $_POST['last_name'] );
-			$user_full_name     = sanitize_text_field( $_POST['user_full_name'] );
-			$first_name         = sanitize_text_field( $_POST['first_name'] );
-			$decrypted_app_name = sanitize_text_field( $_POST['decrypted_app_name'] );
-			$decrypted_user_id  = sanitize_text_field( $_POST['decrypted_user_id'] );
+			$username           = ( isset( $_POST['username_field'] ) ? sanitize_text_field( wp_unslash( $_POST['username_field'] ) ) : '' );
+			$user_picture       = ( isset( $_POST['user_picture'] ) ? sanitize_text_field( wp_unslash( $_POST['user_picture'] ) ) : '' );
+			$user_url           = ( isset( $_POST['user_url'] ) ? sanitize_text_field( wp_unslash( $_POST['user_url'] ) ) : '' );
+			$last_name          = ( isset( $_POST['last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['last_name'] ) ) : '' );
+			$user_full_name     = ( isset( $_POST['user_full_name'] ) ? sanitize_text_field( wp_unslash( $_POST['user_full_name'] ) ) : '' );
+			$first_name         = ( isset( $_POST['first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['first_name'] ) ) : '' );
+			$decrypted_app_name = ( isset( $_POST['decrypted_app_name'] ) ? sanitize_text_field( wp_unslash( $_POST['decrypted_app_name'] ) ) : '' );
+			$decrypted_user_id  = ( isset( $_POST['decrypted_user_id'] ) ? sanitize_text_field( wp_unslash( $_POST['decrypted_user_id'] ) ) : '' );
 			mo_openid_save_profile_completion_form( $username, $user_email, $first_name, $last_name, $user_full_name, $user_url, $user_picture, $decrypted_app_name, $decrypted_user_id );
 		}
 	} elseif ( isset( $_POST['mo_openid_go_back_login_nonce'] ) and isset( $_POST['option'] ) and $_POST['option'] == 'mo_openid_go_back_login' ) {
-		$nonce = sanitize_text_field( $_POST['mo_openid_go_back_login_nonce'] );
+		$nonce = isset( $_POST['mo_openid_go_back_login_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_go_back_login_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mo-openid-go-back-login-nonce' ) ) {
 			wp_die( '<strong>ERROR WPSL04</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 		} else {
@@ -1354,14 +1397,14 @@ function mo_openid_login_validate() {
 			}
 		}
 	} elseif ( isset( $_POST['mo_openid_forgot_password_nonce'] ) and isset( $_POST['option'] ) and $_POST['option'] == 'mo_openid_forgot_password' ) {
-		$nonce = sanitize_text_field( $_POST['mo_openid_forgot_password_nonce'] );
+		$nonce = isset( $_POST['mo_openid_forgot_password_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_forgot_password_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mo-openid-forgot-password-nonce' ) ) {
 			wp_die( '<strong>ERROR WPSL05</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 		} else {
 			if ( current_user_can( 'administrator' ) ) {
 				$email = '';
 				if ( mo_openid_check_empty_or_null( $email ) ) {
-					if ( mo_openid_check_empty_or_null( sanitize_email( $_POST['email'] ) ) ) {
+					if ( mo_openid_check_empty_or_null( ( isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '' ) ) ) {
 						update_option( 'mo_openid_message', 'No email provided. Please enter your email below to reset password.' );
 						mo_openid_show_error_message();
 						if ( get_option( 'regi_pop_up' ) == 'yes' ) {
@@ -1370,7 +1413,7 @@ function mo_openid_login_validate() {
 						}
 						return;
 					} else {
-						$email = sanitize_email( $_POST['email'] );
+						$email = ( isset( $_POST['email'] ) ? sanitize_email( wp_unslash( $_POST['email'] ) ) : '' );
 					}
 				}
 				$customer = new CustomerOpenID();
@@ -1392,8 +1435,8 @@ function mo_openid_login_validate() {
 				}
 			}
 		}
-	} elseif ( isset( $_POST['mo_openid_connect_register_nonce'] ) and isset( $_POST['option'] ) and sanitize_text_field( $_POST['option'] ) == 'mo_openid_connect_register_customer' ) {  // register the admin to miniOrange
-		$nonce = sanitize_text_field( $_POST['mo_openid_connect_register_nonce'] );
+	} elseif ( isset( $_POST['mo_openid_connect_register_nonce'] ) and isset( $_POST['option'] ) and sanitize_text_field( wp_unslash( $_POST['option'] ) ) === 'mo_openid_connect_register_customer' ) {  // register the admin to miniOrange
+		$nonce = isset( $_POST['mo_openid_connect_register_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_connect_register_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mo-openid-connect-register-nonce' ) ) {
 			wp_die( '<strong>ERROR WPSL06</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 		} else {
@@ -1401,38 +1444,38 @@ function mo_openid_login_validate() {
 		}
 	} elseif ( isset( $_POST['show_login'] ) ) {
 		mo_pop_show_verify_password_page();
-	} elseif ( isset( $_POST['mo_openid_show_profile_form_nonce'] ) and isset( $_POST['option'] ) and strpos( sanitize_text_field( $_POST['option'] ), 'mo_openid_show_profile_form' ) !== false ) {
-		$nonce = sanitize_text_field( $_POST['mo_openid_show_profile_form_nonce'] );
+	} elseif ( isset( $_POST['mo_openid_show_profile_form_nonce'] ) and isset( $_POST['option'] ) and strpos( sanitize_text_field( wp_unslash( $_POST['option'] ) ), 'mo_openid_show_profile_form' ) !== false ) {
+		$nonce = isset( $_POST['mo_openid_show_profile_form_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_show_profile_form_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mo-openid-user-show-profile-form-nonce' ) ) {
 			wp_die( '<strong>ERROR WPSL07</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 		} else {
 
 			$user_details = array(
-				'username'        => sanitize_text_field( $_POST['username_field'] ),
-				'user_email'      => sanitize_email( $_POST['email_field'] ),
-				'user_full_name'  => sanitize_text_field( $_POST['user_full_name'] ),
-				'first_name'      => sanitize_text_field( $_POST['first_name'] ),
-				'last_name'       => sanitize_text_field( $_POST['last_name'] ),
-				'user_url'        => sanitize_text_field( $_POST['user_url'] ),
-				'user_picture'    => sanitize_text_field( $_POST['user_picture'] ),
-				'social_app_name' => sanitize_text_field( $_POST['decrypted_app_name'] ),
-				'social_user_id'  => sanitize_text_field( $_POST['decrypted_user_id'] ),
+				'username'        => ( isset( $_POST['username_field'] ) ? sanitize_text_field( wp_unslash( $_POST['username_field'] ) ) : '' ),
+				'user_email'      => ( isset( $_POST['email_field'] ) ? sanitize_email( wp_unslash( $_POST['email_field'] ) ) : '' ),
+				'user_full_name'  => ( isset( $_POST['user_full_name'] ) ? sanitize_text_field( wp_unslash( $_POST['user_full_name'] ) ) : '' ),
+				'first_name'      => ( isset( $_POST['first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['first_name'] ) ) : '' ),
+				'last_name'       => ( isset( $_POST['last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['last_name'] ) ) : '' ),
+				'user_url'        => ( isset( $_POST['user_url'] ) ? sanitize_text_field( wp_unslash( $_POST['user_url'] ) ) : '' ),
+				'user_picture'    => ( isset( $_POST['user_picture'] ) ? sanitize_text_field( wp_unslash( $_POST['user_picture'] ) ) : '' ),
+				'social_app_name' => ( isset( $_POST['decrypted_app_name'] ) ? sanitize_text_field( wp_unslash( $_POST['decrypted_app_name'] ) ) : '' ),
+				'social_user_id'  => ( isset( $_POST['decrypted_user_id'] ) ? sanitize_text_field( wp_unslash( $_POST['decrypted_user_id'] ) ) : '' ),
 			);
 			echo esc_attr( mo_openid_profile_completion_form( $user_details, '1' ) );
 			exit;
 		}
-	} elseif ( isset( $_REQUEST['option'] ) and strpos( sanitize_text_field( $_REQUEST['option'] ), 'oauthredirect' ) !== false ) {
+	} elseif ( isset( $_REQUEST['option'] ) and strpos( sanitize_text_field( wp_unslash( $_REQUEST['option'] ) ), 'oauthredirect' ) !== false ) {
 		if ( isset( $_REQUEST['wp_nonce'] ) ) {
-			$nonce = sanitize_text_field( $_REQUEST['wp_nonce'] );
+			$nonce = isset( $_REQUEST['wp_nonce'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['wp_nonce'] ) ) : '';
 			if ( ! wp_verify_nonce( $nonce, 'mo-openid-oauth-app-nonce' ) ) {
 				wp_die( '<strong>ERROR WPSL08</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 			} else {
-				$appname = sanitize_text_field( $_REQUEST['app_name'] );
+				$appname = ( isset( $_REQUEST['app_name'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['app_name'] ) ) : '' );
 				mo_openid_custom_app_oauth_redirect( $appname );
 			}
 		}
-	} elseif ( isset( $_POST['mo_openid_user_otp_validation_nonce'] ) and isset( $_POST['otp_field'] ) and $_POST['option'] == 'mo_openid_otp_validation' ) {
-		$nonce = sanitize_text_field( $_POST['mo_openid_user_otp_validation_nonce'] );
+	} elseif ( isset( $_POST['mo_openid_user_otp_validation_nonce'] ) and isset( $_POST['otp_field'] ) and isset( $_POST['option'] ) and $_POST['option'] == 'mo_openid_otp_validation' ) {
+		$nonce = isset( $_POST['mo_openid_user_otp_validation_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_user_otp_validation_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mo-openid-user-otp-validation-nonce' ) ) {
 			wp_die( '<strong>ERROR WPSL09</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 		} else {
@@ -1440,20 +1483,20 @@ function mo_openid_login_validate() {
 			if ( empty( $_SESSION['appname'] ) ) {
 				wp_die( esc_html__( 'Invalid request. Please initiate login from the social login button.', 'miniorange-login-openid' ) );
 			}
-			$username           = sanitize_text_field( $_POST['username_field'] );
-			$user_email         = sanitize_email( $_POST['email_field'] );
+			$username           = ( isset( $_POST['username_field'] ) ? sanitize_text_field( wp_unslash( $_POST['username_field'] ) ) : '' );
+			$user_email         = ( isset( $_POST['email_field'] ) ? sanitize_email( wp_unslash( $_POST['email_field'] ) ) : '' );
 			$oauth_email        = isset( $_SESSION['user_email'] ) ? sanitize_email( $_SESSION['user_email'] ) : '';
 			if ( ! empty( $oauth_email ) && ! hash_equals( $oauth_email, $user_email ) ) {
 				wp_die( '<strong>ERROR</strong>: The email you submitted does not match your social account.' );
 			}
-			$otp_token          = sanitize_text_field( $_POST['otp_field'] );
-			$user_picture       = sanitize_text_field( $_POST['user_picture'] );
-			$user_url           = sanitize_text_field( $_POST['user_url'] );
-			$last_name          = sanitize_text_field( $_POST['last_name'] );
-			$user_full_name     = sanitize_text_field( $_POST['user_full_name'] );
-			$first_name         = sanitize_text_field( $_POST['first_name'] );
-			$decrypted_app_name = sanitize_text_field( $_POST['decrypted_app_name'] );
-			$decrypted_user_id  = sanitize_text_field( $_POST['decrypted_user_id'] );
+			$otp_token          = ( isset( $_POST['otp_field'] ) ? sanitize_text_field( wp_unslash( $_POST['otp_field'] ) ) : '' );
+			$user_picture       = ( isset( $_POST['user_picture'] ) ? sanitize_text_field( wp_unslash( $_POST['user_picture'] ) ) : '' );
+			$user_url           = ( isset( $_POST['user_url'] ) ? sanitize_text_field( wp_unslash( $_POST['user_url'] ) ) : '' );
+			$last_name          = ( isset( $_POST['last_name'] ) ? sanitize_text_field( wp_unslash( $_POST['last_name'] ) ) : '' );
+			$user_full_name     = ( isset( $_POST['user_full_name'] ) ? sanitize_text_field( wp_unslash( $_POST['user_full_name'] ) ) : '' );
+			$first_name         = ( isset( $_POST['first_name'] ) ? sanitize_text_field( wp_unslash( $_POST['first_name'] ) ) : '' );
+			$decrypted_app_name = ( isset( $_POST['decrypted_app_name'] ) ? sanitize_text_field( wp_unslash( $_POST['decrypted_app_name'] ) ) : '' );
+			$decrypted_user_id  = ( isset( $_POST['decrypted_user_id'] ) ? sanitize_text_field( wp_unslash( $_POST['decrypted_user_id'] ) ) : '' );
 			if ( isset( $_POST['resend_otp'] ) ) {
 				$send_content = send_otp_token( $user_email );
 				if ( $send_content['status'] == 'FAILURE' ) {
@@ -1506,16 +1549,14 @@ function mo_openid_login_validate() {
 			}
 			mo_openid_social_login_validate_otp( $username, $user_email, $first_name, $last_name, $user_full_name, $user_url, $user_picture, $decrypted_app_name, $decrypted_user_id, $otp_token );
 		}
-	} elseif ( isset( $_POST['mo_openid_connect_verify_nonce'] ) and isset( $_POST['option'] ) and sanitize_text_field( $_POST['option'] ) == 'mo_openid_connect_verify_customer' ) {    // register the admin to miniOrange
-		$nonce = sanitize_text_field( $_POST['mo_openid_connect_verify_nonce'] );
+	} elseif ( isset( $_POST['mo_openid_connect_verify_nonce'] ) and isset( $_POST['option'] ) and sanitize_text_field( wp_unslash( $_POST['option'] ) ) === 'mo_openid_connect_verify_customer' ) {    // register the admin to miniOrange
+		$nonce = isset( $_POST['mo_openid_connect_verify_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_connect_verify_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mo-openid-connect-verify-nonce' ) ) {
 			wp_die( '<strong>ERROR WPSL10</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 		} else {
 			mo_register_old_user();
 		}
-	} elseif ( isset( $_REQUEST['option'] ) and strpos( sanitize_text_field( $_REQUEST['option'] ), 'moopenid' ) !== false and ( ! empty(get_option( 'mo_openid_customer_token' ) ) ) ) {
-		mo_openid_process_social_login();
-	} elseif ( strpos( sanitize_text_field( $_SERVER['REQUEST_URI'] ), 'openidcallback' ) !== false || ( ( strpos( sanitize_text_field( $_SERVER['REQUEST_URI'] ), 'oauth_token' ) !== false ) && ( strpos( sanitize_text_field( $_SERVER['REQUEST_URI'] ), 'oauth_verifier' ) ) ) ) {
+	} elseif ( strpos( $mo_request_uri, 'openidcallback' ) !== false || ( ( strpos( $mo_request_uri, 'oauth_token' ) !== false ) && ( strpos( $mo_request_uri, 'oauth_verifier' ) ) ) ) {
 		mo_openid_process_custom_app_callback();
 	}
 }
@@ -1531,7 +1572,7 @@ function get_current_customer( $password ) {
 		update_option( 'mo_openid_message', 'Your account has been retrieved successfully.' );
 		delete_option( 'mo_openid_verify_customer' );
 		delete_option( 'mo_openid_new_registration' );
-		if ( isset( $_POST['action'] ) ? sanitize_text_field($_POST['action']) == 'mo_register_new_user' : 0 ) { // phpcs:ignore
+		if ( isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) === 'mo_register_new_user' : 0 ) { // phpcs:ignore
 			wp_send_json( array( 'success' => 'Your account has been retrieved successfully.' ) );
 		} else {
 			mo_openid_show_success_message();
@@ -1540,7 +1581,7 @@ function get_current_customer( $password ) {
 		update_option( 'mo_openid_message', 'You already have an account with miniOrange. Please enter a valid password.' );
 		update_option( 'mo_openid_verify_customer', 'true' );
 		delete_option( 'mo_openid_new_registration' );
-		if ( isset( $_POST['action'] ) ? $_POST['action'] == 'mo_register_new_user' : 0 ) { // phpcs:ignore
+		if ( isset( $_POST['action'] ) ? sanitize_text_field( wp_unslash( $_POST['action'] ) ) === 'mo_register_new_user' : 0 ) { // phpcs:ignore
 			wp_send_json( array( 'error' => 'You already have an account with miniOrange. Please enter a valid password.' ) );
 		} else {
 			mo_openid_show_error_message();
@@ -1550,11 +1591,6 @@ function get_current_customer( $password ) {
 			}
 		}
 	}
-}
-
-function encrypt_data( $data, $key ) {
-	return base64_encode( openssl_encrypt( $data, 'aes-128-ecb', $key, OPENSSL_RAW_DATA ) );
-
 }
 
 function mo_openid_update_role( $user_id = '', $user_url = '' ) {
@@ -1572,7 +1608,7 @@ function mo_openid_update_role( $user_id = '', $user_url = '' ) {
 
 function mo_openid_login_redirect( $username = '', $user = null ) {
 	mo_openid_start_session();
-	if ( is_string( $username ) && $username && is_object( $user ) && ! empty( $user->ID ) && ( $user_id = $user->ID ) && isset( $_SESSION['mo_login'] ) && $_SESSION['mo_login'] ) {
+	if ( is_string( $username ) && $username && is_object( $user ) && ! empty( $user->ID ) && ( $user_id = $user->ID ) && isset( $_SESSION['mo_login'] ) && (bool) $_SESSION['mo_login'] ) {
 		$_SESSION['mo_login'] = false;
 		wp_set_auth_cookie( $user_id, true );
 		$redirect_url = mo_openid_get_redirect_url();
@@ -1584,7 +1620,7 @@ function mo_openid_login_redirect( $username = '', $user = null ) {
 function mo_openid_login_redirect_pop_up( $username = '', $user = null ) {
 
 	mo_openid_start_session();
-	if ( is_string( $username ) && $username && is_object( $user ) && ! empty( $user->ID ) && ( $user_id = $user->ID ) && isset( $_SESSION['mo_login'] ) && $_SESSION['mo_login'] ) {
+	if ( is_string( $username ) && $username && is_object( $user ) && ! empty( $user->ID ) && ( $user_id = $user->ID ) && isset( $_SESSION['mo_login'] ) && (bool) $_SESSION['mo_login'] ) {
 		$_SESSION['mo_login'] = false;
 		wp_set_auth_cookie( $user_id, true );
 	}
@@ -1626,7 +1662,13 @@ function mo_openid_link_account( $username, $user ) {
 	}
 
 	global $wpdb;
-	$linked_email_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_email = %s AND linked_social_app = %s', $user_email, $social_app_name ) );
+	$mo_cache_key       = mo_openid_cache_key( 'linked_user_by_email_app:' . $user_email . '|' . $social_app_name );
+	$mo_cache_found     = false;
+	$linked_email_id    = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+	if ( false === $mo_cache_found ) {
+		$linked_email_id = $wpdb->get_var( $wpdb->prepare( 'SELECT user_id FROM ' . $wpdb->prefix . 'mo_openid_linked_user where linked_email = %s AND linked_social_app = %s', $user_email, $social_app_name ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- custom plugin table; cached below via wp_cache_set().
+		wp_cache_set( $mo_cache_key, $linked_email_id, MO_OPENID_CACHE_GROUP, 60 );
+	}
 
 	// if a user with given email and social app name doesn't already exist in the mo_openid_linked_user table
 	if ( ! isset( $linked_email_id ) ) {
@@ -1638,7 +1680,13 @@ function mo_openid_link_account( $username, $user ) {
 function mo_openid_delete_profile_column( $value, $columnName, $userId ) {
 	if ( 'mo_openid_delete_profile_data' == $columnName ) {
 		global $wpdb;
-		$socialUser = $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM ' . $wpdb->prefix . 'mo_openid_linked_user WHERE user_id = %d ', $userId ) );
+		$mo_cache_key   = mo_openid_cache_key( 'linked_user_by_user_id:' . $userId );
+		$mo_cache_found = false;
+		$socialUser     = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+		if ( false === $mo_cache_found ) {
+			$socialUser = $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM ' . $wpdb->prefix . 'mo_openid_linked_user WHERE user_id = %d ', $userId ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- custom plugin table; cached below via wp_cache_set().
+			wp_cache_set( $mo_cache_key, $socialUser, MO_OPENID_CACHE_GROUP, 60 );
+		}
 
 		if ( $socialUser > 0 && ! get_user_meta( $userId, 'mo_openid_data_deleted' ) ) {
 			return '<a href="javascript:void(0)" onclick="javascript:moOpenidDeleteSocialProfile(this, ' . $userId . ')">Delete</a>';
@@ -1648,8 +1696,20 @@ function mo_openid_delete_profile_column( $value, $columnName, $userId ) {
 	}
 	if ( 'mo_openid_linked_social_app' == $columnName ) {
 		global $wpdb;
-		$socialUser = $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM ' . $wpdb->prefix . 'mo_openid_linked_user WHERE user_id = %d ', $userId ) );
-		$a          = $wpdb->get_col( $wpdb->prepare( 'SELECT all linked_social_app FROM ' . $wpdb->prefix . 'mo_openid_linked_user where user_id= %d', $userId ) );
+		$mo_cache_key   = mo_openid_cache_key( 'linked_user_by_user_id:' . $userId );
+		$mo_cache_found = false;
+		$socialUser     = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+		if ( false === $mo_cache_found ) {
+			$socialUser = $wpdb->get_var( $wpdb->prepare( 'SELECT id FROM ' . $wpdb->prefix . 'mo_openid_linked_user WHERE user_id = %d ', $userId ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- custom plugin table; cached below via wp_cache_set().
+			wp_cache_set( $mo_cache_key, $socialUser, MO_OPENID_CACHE_GROUP, 60 );
+		}
+		$mo_cache_key   = mo_openid_cache_key( 'linked_user_apps_by_user_id:' . $userId );
+		$mo_cache_found = false;
+		$a              = wp_cache_get( $mo_cache_key, MO_OPENID_CACHE_GROUP, false, $mo_cache_found );
+		if ( false === $mo_cache_found ) {
+			$a = $wpdb->get_col( $wpdb->prepare( 'SELECT all linked_social_app FROM ' . $wpdb->prefix . 'mo_openid_linked_user where user_id= %d', $userId ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.SchemaChange -- custom plugin table; cached below via wp_cache_set().
+			wp_cache_set( $mo_cache_key, $a, MO_OPENID_CACHE_GROUP, 60 );
+		}
 		$b          = '';
 		foreach ( $a as $x => $y ) {
 			if ( $y == 'facebook' ) {
@@ -1670,8 +1730,6 @@ function mo_openid_delete_profile_column( $value, $columnName, $userId ) {
 				$y = 'vKontakte';
 			} if ( $y == 'twitter' ) {
 				$y = 'Twitter';
-			}if ( $y == 'salesforce' ) {
-				$y = 'Salesforce';
 			}if ( $y == 'yahoo' ) {
 				$y = 'Yahoo';
 			}if ( $y == 'yahoo' ) {

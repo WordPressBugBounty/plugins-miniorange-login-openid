@@ -1,11 +1,16 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 class mo_facebook {
 
 	public $color     = '#1877F2';
 	public $scope     = 'email, public_profile';
 	public $video_url = 'https://www.youtube.com/embed/ju21twD0uB0';
 	public $instructions;
+	public $site_url;
 	public function __construct() {
 		$this->site_url     = get_option( 'siteurl' );
 		$this->instructions = "Go to Facebook developers console <a href=\"https://developers.facebook.com/apps/\" target=\"_blank\">https://developers.facebook.com/apps/</a>. Login with your facebook developer account.
@@ -15,7 +20,7 @@ class mo_facebook {
                                 ##On add products to your app page click on setup button under facebook login option. 
                                 ##Click on <b>Web</b>. Enter <b><code id='12'>" . get_option( 'siteurl' ) . "</code><i style= \"width: 11px;height: 9px;padding-left:2px;padding-top:3px\" class=\"far fa-fw fa-lg fa-copy mo_copy mo_copytooltip\" onclick=\"copyToClipboard(this, '#12', '#shortcode_url_copy')\"><span id=\"shortcode_url_copy\" class=\"mo_copytooltiptext\">Copy to Clipboard</span></i></b> into <b>Site URL</b> than click on <b>Save</b>. 
                                 ##Click on <b>Settings</b> on left side menu and select <b>Basics</b> option.
-                                ##Enter <b><code id='11'>" . sanitize_text_field( $_SERVER['HTTP_HOST'] ) . "</code><i style= \"width: 11px;height: 9px;padding-left:2px;padding-top:3px\" class=\"far fa-fw fa-lg fa-copy mo_copy mo_copytooltip\" onclick=\"copyToClipboard(this, '#11', '#shortcode_url_copy1')\"><span id=\"shortcode_url_copy1\" class=\"mo_copytooltiptext\">Copy to Clipboard</span></i></b> in <b>App Domain</b>. Enter your <b>Privacy Policy URL</b>
+                                ##Enter <b><code id='11'>" . ( isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '' ) . "</code><i style= \"width: 11px;height: 9px;padding-left:2px;padding-top:3px\" class=\"far fa-fw fa-lg fa-copy mo_copy mo_copytooltip\" onclick=\"copyToClipboard(this, '#11', '#shortcode_url_copy1')\"><span id=\"shortcode_url_copy1\" class=\"mo_copytooltiptext\">Copy to Clipboard</span></i></b> in <b>App Domain</b>. Enter your <b>Privacy Policy URL</b>
                                 ##Under <b>User Data Deletion</b> click on the drop down, Select <b>Data Deletion Instruction URl</b> (Enter the URL of your page with the instructions on how users can delete their accounts on your site).
                                 ##Select <b>Category</b> of your website. Then click on <b>Save Changes</b>. 
                                 ##On the Left side panel, Click on <b>Facebook Login</b> and select <b>Settings</b> option. 
@@ -39,7 +44,7 @@ class mo_facebook {
 		$_SESSION['appname'] = 'facebook';
 		$client_id           = $appslist['facebook']['clientid'];
 		$scope               = $appslist['facebook']['scope'];
-		$login_dialog_url    = 'https://www.facebook.com/v3.2/dialog/oauth?client_id=' . $client_id . '&state=1328974&response_type=code&sdk=php-sdk-5.7.0&redirect_uri=' . $social_app_redirect_uri . '&scope=email';
+		$login_dialog_url    = 'https://www.facebook.com/v3.2/dialog/oauth?client_id=' . $client_id . '&state=' . rawurlencode( mo_openid_get_current_oauth_state() ) . '&response_type=code&sdk=php-sdk-5.7.0&redirect_uri=' . $social_app_redirect_uri . '&scope=email';
 		header( 'Location:' . $login_dialog_url );
 		exit;
 	}

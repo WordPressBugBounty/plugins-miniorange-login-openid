@@ -1,8 +1,12 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_openid_social_media_services() {
 	?>
  <script>jQuery('#mo_openid_page_heading').text('<?php echo esc_attr( mo_sl( 'Social Media Service' ) ); ?>');
-  var temp = jQuery("<a style=\"left: 1%; padding:4px; position: relative; text-decoration: none\" class=\"mo-openid-premium\" href=\"<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>\">PRO</a>");
+  var temp = jQuery("<a style=\"left: 1%; padding:4px; position: relative; text-decoration: none\" class=\"mo-openid-premium\" href=\"<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>\">PRO</a>");
 					jQuery("#mo_openid_page_heading").append(temp);</script>
  <form id="social_media_services" name="social_media_services" method="post" action="">
 		<input type="hidden" name="option" value="mo_openid_social_media_services" />
@@ -11,7 +15,7 @@ function mo_openid_social_media_services() {
 	<div style="height: auto; padding: 20px 20px 20px 20px; "><table style="width:60%">
 
 		<label style="cursor: auto" class="mo_openid_note_style">&nbsp;&nbsp;&nbsp;<?php echo esc_attr( mo_sl( 'Enable this feature to users will get option for like, recommend and pin your website page on facebook and pinterest' ) ); ?>.</label>
-		   <h2>Social Sharing Services <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h2><br>
+		   <h2>Social Sharing Services <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h2><br>
 		 <tr>
 			<td><input type="checkbox" class="app_enable" id="mo_openid_facebook_like" name="mo_openid_facebook_like" <?php checked( get_option( 'mo_openid_facebook_like' ) == 'on' ); ?> disabled><img src="<?php echo esc_url( PLUGIN_URL ) . 'share_icons/facebook_like.png'; ?>"
 			></td>
@@ -24,7 +28,7 @@ function mo_openid_social_media_services() {
 		<table style="width:100%; padding: 20px 20px 20px 20px;">
 		 <tr><td>
 			<label style="cursor: auto" class="mo_openid_note_style">&nbsp;&nbsp;&nbsp;<?php echo esc_attr( mo_sl( 'Enable this feature to to give user an option to E-amil subcribe on your website.' ) ); ?>.</label>
-			<h2>E-mail Subcribe <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h2>
+			<h2>E-mail Subcribe <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></h2>
 			<input type="email" name="email" id="email" required placeholder="Enter your email address" disabled>
 			<input class="mo_btn mo_btn-primary" value="Join Now" type="submit" id="submit" >
 			<br><br>E-mail subscribe from <b>[mail-subcribe]</b>

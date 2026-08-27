@@ -1,11 +1,15 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_openid_social_comment( $post, $url ) {
 	?>
 		<script>
 			function moOpenIDShowCommentForms() {
 				var commentFormElement = document.getElementById("respond");
 				if (commentFormElement) {
-				<?php wp_enqueue_script( 'moopenid-comment-fb', plugins_url( 'includes/js/social/fb_comment.js', __FILE__ ), array( 'jquery' ) ); ?>
+				<?php wp_enqueue_script( 'moopenid-comment-fb', plugins_url( 'includes/js/social/fb_comment.js', __FILE__ ), array( 'jquery' ), MO_OPENID_SOCIAL_LOGIN_VERSION, true ); ?>
 					var commentForm = '<div><h3 id="mo_reply_label" class="comment-reply-title"><?php echo esc_attr( get_option( 'mo_openid_social_comment_heading_label' ) ); ?></h3><br/><ul class="mo_openid_comment_tab">';
 				<?php
 				if ( get_option( 'mo_openid_social_comment_default' ) ) {

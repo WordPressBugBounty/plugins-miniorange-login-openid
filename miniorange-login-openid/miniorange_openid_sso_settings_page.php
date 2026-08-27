@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 require_once dirname( __FILE__ ) . '/mo_openid_sso_encryption.php';
 
 ob_start();
@@ -41,8 +45,8 @@ require 'view/soc_sha/twitter_btn/mo_twitter_btn.php';
 require 'view/soc_sha/soc_med_ser/mo_openid_social_media_services.php';
 
 function mo_register_openid() {
-	if ( isset( $_GET['tab'] ) && sanitize_text_field( $_GET['tab'] ) !== 'register' ) {  // phpcs:ignore WordPress.Security.NonceVerification -- Ignoring nonce verification because we are fetching data from URL and not on form submission.
-		$active_tab = sanitize_text_field( $_GET['tab'] ); // phpcs:ignore WordPress.Security.NonceVerification  -- Ignoring nonce verification because we are fetching data from URL and not on form submission.
+	if ( isset( $_GET['tab'] ) && sanitize_text_field( wp_unslash( $_GET['tab'] ) ) !== 'register' ) {  // phpcs:ignore WordPress.Security.NonceVerification -- Ignoring nonce verification because we are fetching data from URL and not on form submission.
+		$active_tab = sanitize_text_field( wp_unslash( $_GET['tab'] ) ); // phpcs:ignore WordPress.Security.NonceVerification  -- Ignoring nonce verification because we are fetching data from URL and not on form submission.
 	} else {
 		$active_tab = 'config_apps';
 	}
@@ -110,67 +114,67 @@ function mo_register_openid() {
 				if ( $active_tab == 'config_apps' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'config_apps' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Configure Apps' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'config_apps' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Configure Apps' ) ); ?></a>
 				<a id="customise_social_icons" class="tablinks
 				<?php
 				if ( $active_tab == 'customise_social_icons' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'customise_social_icons' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Customise Social Login Icons' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'customise_social_icons' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Customise Social Login Icons' ) ); ?></a>
 				<a id="disp_opt" class="tablinks
 				<?php
 				if ( $active_tab == 'disp_opt' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'disp_opt' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Display Options' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'disp_opt' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Display Options' ) ); ?></a>
 				<a id="redirect_opt" class="tablinks
 				<?php
 				if ( $active_tab == 'redirect_opt' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'redirect_opt' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Redirect Options' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'redirect_opt' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Redirect Options' ) ); ?></a>
 				<a id="registration" class="tablinks
 				<?php
 				if ( $active_tab == 'registration' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'registration' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Registration' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'registration' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Registration' ) ); ?></a>
 				<a id="integration" style="color: white;" class="tablinks
 				<?php
 				if ( $active_tab == 'integration' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Popular Integrations' ) ); ?><span class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'integration' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Popular Integrations' ) ); ?><span class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
 				<a id="profile_completion" class="tablinks
 				<?php
 				if ( $active_tab == 'profile_completion' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'profile_completion' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Profile Completion' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'profile_completion' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Profile Completion' ) ); ?></a>
 				<a id="email_settings" class="tablinks
 				<?php
 				if ( $active_tab == 'email_settings' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'email_settings' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Email Notification' ) ); ?><span class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'email_settings' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Email Notification' ) ); ?><span class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
 				<a id="recaptcha" class="tablinks
 				<?php
 				if ( $active_tab == 'recaptcha' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'recaptcha' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Recaptcha / GDPR' ) ); ?><span class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'recaptcha' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Recaptcha / GDPR' ) ); ?><span class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
 				<a id="premium_features" class="tablinks
 				<?php
 				if ( $active_tab == 'premium_features' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'premium_features' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Premium Features' ) ); ?><span class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'premium_features' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Premium Features' ) ); ?><span class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
 				<a id="link_social_acc" class="tablinks
 				<?php
 				if ( $active_tab == 'link_social_acc' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'link_social_acc' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Link Social Account & Domain Restriction' ) ); ?>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'link_social_acc' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Link Social Account & Domain Restriction' ) ); ?>
 					 <?php
 						if ( $disable ) {
 							?>
@@ -180,19 +184,19 @@ function mo_register_openid() {
 				if ( $active_tab == 'shortcodes' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'shortcodes' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Shortcodes' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'shortcodes' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Shortcodes' ) ); ?></a>
 				<a id="add_on" class="tablinks
 				<?php
 				if ( $active_tab == 'add_on' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'add_on' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Add On' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'add_on' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Add On' ) ); ?></a>
 				<a id="profile" class="tablinks
 				<?php
 				if ( $active_tab == 'profile' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'profile' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'User Profile' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'profile' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'User Profile' ) ); ?></a>
 			</div>
 		</div>
 		<style>
@@ -205,13 +209,13 @@ function mo_register_openid() {
 							<table>
 								<tr>
 									<td><div>
-										<a id="addon" class="mo_sl_header_text mo_sl_effect-shine mo_sl_expand" style="color: white; text-decoration: none; " <?php echo $active_tab == 'add_on' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'add_on' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Add On' ) ); ?></a>
-											&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a id="pricing" class="mo_sl_header_text mo_sl_effect-shine mo_sl_expand" style="color: white; text-decoration: none; "<?php echo $active_tab == 'licensing_plans' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>" onclick="mo_openid_extension_switch()"><?php echo esc_attr( mo_sl( 'Licensing Plan' ) ); ?></a>
-											&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;<a id="doc_tab" class="mo_sl_header_text mo_sl_effect-shine mo_sl_expand" style="color: white; text-decoration: none; "<?php echo $active_tab == 'doc_tab' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'doc_tab' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Documentation' ) ); ?></a>
+										<a id="addon" class="mo_sl_header_text mo_sl_effect-shine mo_sl_expand" style="color: white; text-decoration: none; " <?php echo $active_tab == 'add_on' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'add_on' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Add On' ) ); ?></a>
+											&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a id="pricing" class="mo_sl_header_text mo_sl_effect-shine mo_sl_expand" style="color: white; text-decoration: none; "<?php echo $active_tab == 'licensing_plans' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>" onclick="mo_openid_extension_switch()"><?php echo esc_attr( mo_sl( 'Licensing Plan' ) ); ?></a>
+											&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;<a id="doc_tab" class="mo_sl_header_text mo_sl_effect-shine mo_sl_expand" style="color: white; text-decoration: none; "<?php echo $active_tab == 'doc_tab' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'doc_tab' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Documentation' ) ); ?></a>
 											&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;<b><a id="rest_api_page" class="mo_sl_header_text mo_sl_effect-shining mo_sl_expand" target="_blank" style="color: white; text-decoration: none; "<?php echo $active_tab == 'rest_api_page' ? 'nav-tab-active' : ''; ?>" href="https://plugins.miniorange.com/wordpress-rest-api-authentication"><?php echo esc_attr( mo_sl( 'Rest API' ) ); ?></a></b>
-											&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;<a id="reports" class="mo_sl_header_text mo_sl_effect-shine mo_sl_expand" style="color: white; text-decoration: none; "<?php echo $active_tab == 'reports' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'reports' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Reports' ) ); ?></a>
+											&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;<a id="reports" class="mo_sl_header_text mo_sl_effect-shine mo_sl_expand" style="color: white; text-decoration: none; "<?php echo $active_tab == 'reports' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'reports' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Reports' ) ); ?></a>
 											&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;<a id="mo_openid_rateus_modal" class="mo_sl_header_text mo_sl_effect-shine mo_sl_expand" onclick="asdf(this)" style="color: white; text-decoration: none; " ><?php echo esc_attr( mo_sl( 'Rate us' ) ); ?></a>
-											&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;<a id="sale" class="mo_sl_header_text mo_button_black " style="color: black; text-decoration: none; " href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>" ><?php echo esc_attr( mo_sl( 'Sale' ) ); ?></a>
+											&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;<a id="sale" class="mo_sl_header_text mo_button_black " style="color: black; text-decoration: none; " href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>" ><?php echo esc_attr( mo_sl( 'Sale' ) ); ?></a>
 <!--                                        &nbsp;&nbsp;&nbsp;<a id="mo_openid_restart_gtour" class="header_text" style="color: white; text-decoration: none; " onclick="window.location= base_url+'/wp-admin/admin.php?page=mo_openid_general_settings&tab=config_apps';restart_tour()" value="Restart Tour">--><?php // echo mo_sl('Restart Tour'); ?><!--</a>-->
 										</div>
 									</td>
@@ -298,7 +302,6 @@ function mo_register_openid() {
 				</div>
 			</div>
 		</div>
-		<script type="text/javascript" src= "<?php echo esc_url( plugins_url( '/includes/js/mo_openid_phone.js', __FILE__ ) ); ?>"></script>
 		<input type="button" id="mymo_btn" style="display: none" class="mo_support-help-button" data-show="false" onclick="mo_openid_support_form('')" value="<?php echo esc_attr( mo_sl( 'NEED HELP' ) ); ?>">
 	<div style="position: fixed; bottom: 97px; right: 166px;" >
 
@@ -485,13 +488,6 @@ function mo_register_openid() {
 					}
 				},
 				{
-					element: "#mo_set_pre_config_app",
-					title: "Enable pre-configure app",
-					content: "If you don't want to set up your own app then enable pre configured app from here.",
-					backdrop:'body',
-					backdropPadding:'6',
-				},
-				{
 					element: "#mo_openid_cust_app_instructions",
 					title: "Configure your app",
 					content: "If you want to set up your own app then follow these instrutions.",
@@ -653,8 +649,8 @@ function mo_register_openid() {
 }
 
 function mo_register_sharing_openid() {
-	if ( isset( $_GET['tab'] ) && sanitize_text_field( $_GET['tab'] ) !== 'register' ) { // phpcs:ignore WordPress.Security.NonceVerification
-		$active_tab = sanitize_text_field( $_GET['tab'] ); // phpcs:ignore WordPress.Security.NonceVerification
+	if ( isset( $_GET['tab'] ) && sanitize_text_field( wp_unslash( $_GET['tab'] ) ) !== 'register' ) { // phpcs:ignore WordPress.Security.NonceVerification
+		$active_tab = sanitize_text_field( wp_unslash( $_GET['tab'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 	} else {
 		$active_tab = 'soc_apps';
 	}
@@ -709,10 +705,10 @@ function mo_register_sharing_openid() {
 				<td>&nbsp;<a style="text-decoration:none" href="https://plugins.miniorange.com/"
 							 target="_blank"><h1 style="color: #c9302c"><?php echo esc_attr( mo_sl( 'miniOrange Social Login' ) ); ?></h1></a></td>
 				<td> <a id="forum" style="margin-top: 23px" class="button" <?php echo $active_tab == 'forum' ? 'nav-tab-active' : ''; ?>" href="https://wordpress.org/support/plugin/miniorange-login-openid/" target="_blank"><?php echo esc_attr( mo_sl( 'Forum' ) ); ?></a></td>
-				<td> <a id="addon" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button" <?php echo $active_tab == 'add_on' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'add_on' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Add On' ) ); ?></a></td>
-				<td> <a id="doc_tab" style="margin-top: 23px;background: #0867B2;border-color: #0867B2;color: white;" class="button"<?php echo $active_tab == 'doc_tab' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'doc_tab' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Documentation' ) ); ?></a></td>
-				<td> <a id="reports" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'reports' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'reports' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Reports' ) ); ?></a></td>
-				<td> <a id="pricing" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'licensing_plans' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>" onclick="mo_openid_extension_switch()"><?php echo esc_attr( mo_sl( 'Upgrade Now' ) ); ?></a></td>
+				<td> <a id="addon" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button" <?php echo $active_tab == 'add_on' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'add_on' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Add On' ) ); ?></a></td>
+				<td> <a id="doc_tab" style="margin-top: 23px;background: #0867B2;border-color: #0867B2;color: white;" class="button"<?php echo $active_tab == 'doc_tab' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'doc_tab' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Documentation' ) ); ?></a></td>
+				<td> <a id="reports" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'reports' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'reports' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Reports' ) ); ?></a></td>
+				<td> <a id="pricing" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'licensing_plans' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>" onclick="mo_openid_extension_switch()"><?php echo esc_attr( mo_sl( 'Upgrade Now' ) ); ?></a></td>
 				<td>
 			</tr>
 		</table>
@@ -734,7 +730,7 @@ function mo_register_sharing_openid() {
 					echo '_active';}
 				?>
 				"
-				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'soc_apps' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">
+				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'soc_apps' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">
 									<?php
 									echo esc_attr(
 										mo_sl(
@@ -751,7 +747,7 @@ function mo_register_sharing_openid() {
 						echo '_active';}
 					?>
 					"
-				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'customization' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Customization' ) ); ?>
+				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'customization' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Customization' ) ); ?>
 				</a>
 				<a id="share_cnt" class="tablinks
 				<?php
@@ -759,7 +755,7 @@ function mo_register_sharing_openid() {
 					echo '_active';}
 				?>
 				"
-				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'share_cnt' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">
+				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'share_cnt' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">
 									<?php
 									echo esc_attr(
 										mo_sl(
@@ -776,7 +772,7 @@ function mo_register_sharing_openid() {
 					echo '_active';}
 				?>
 				"
-				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'display_opt' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">
+				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'display_opt' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">
 									<?php
 									echo esc_attr(
 										mo_sl(
@@ -792,7 +788,7 @@ function mo_register_sharing_openid() {
 					echo '_active';}
 				?>
 				"
-				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'short_code' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Shortcodes' ) ); ?></a>
+				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'short_code' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Shortcodes' ) ); ?></a>
 
 				<a id="social_media_services" class="tablinks
 				<?php
@@ -800,7 +796,7 @@ function mo_register_sharing_openid() {
 					echo '_active';}
 				?>
 				"
-				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'social_media_services' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Social Media Services' ) ); ?><span style="margin-left: 1%" class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
+				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'social_media_services' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Social Media Services' ) ); ?><span style="margin-left: 1%" class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
 
 				<a id="social_icons_customization" class="tablinks
 				<?php
@@ -808,7 +804,7 @@ function mo_register_sharing_openid() {
 					echo '_active';}
 				?>
 				"
-				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'social_icons_customization' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Social Icons Customization' ) ); ?><span style="margin-left: 2%" class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
+				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'social_icons_customization' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Social Icons Customization' ) ); ?><span style="margin-left: 2%" class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
 
 				<a id="mo_twitter_mo_btn" class="tablinks
 				<?php
@@ -816,7 +812,7 @@ function mo_register_sharing_openid() {
 					echo '_active';}
 				?>
 				"
-				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_twitter_mo_btn' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Twitter Follow Button' ) ); ?><span style="margin-left: 1%" class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
+				   href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_twitter_mo_btn' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Twitter Follow Button' ) ); ?><span style="margin-left: 1%" class="mo-openid-premium"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></span></a>
 
 
 			</div>
@@ -879,7 +875,6 @@ function mo_register_sharing_openid() {
 				</div>
 			</div>
 		</div>
-		<script type="text/javascript" src="<?php echo esc_url( plugins_url( '/includes/js/mo_openid_phone.js', __FILE__ ) ); ?>"></script>
 
 		<input type="button" id="mymo_btn" style="display: none" class="mo_support-help-button" data-show="false" onclick="mo_openid_support_form('')" value="<?php echo esc_attr( mo_sl( 'NEED HELP' ) ); ?>">
 
@@ -928,8 +923,8 @@ function mo_register_sharing_openid() {
 }
 
 function mo_comment_openid() {
-	if ( isset( $_GET['tab'] ) && sanitize_text_field( $_GET['tab'] ) !== 'register' ) { // phpcs:ignore WordPress.Security.NonceVerification
-		$active_tab = sanitize_text_field( $_GET['tab'] ); // phpcs:ignore WordPress.Security.NonceVerification
+	if ( isset( $_GET['tab'] ) && sanitize_text_field( wp_unslash( $_GET['tab'] ) ) !== 'register' ) { // phpcs:ignore WordPress.Security.NonceVerification
+		$active_tab = sanitize_text_field( wp_unslash( $_GET['tab'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
 	} else {
 		$active_tab = 'select_applications';
 	}
@@ -980,10 +975,10 @@ function mo_comment_openid() {
 					<td>&nbsp;<a style="text-decoration:none" href="https://plugins.miniorange.com/"
 								 target="_blank"><h1 style="color: #c9302c"><?php echo esc_attr( mo_sl( 'miniOrange Social Login' ) ); ?></h1></a></td>
 					<td> <a id="forum" style="margin-top: 23px" class="button" <?php echo $active_tab == 'forum' ? 'nav-tab-active' : ''; ?>" href="https://wordpress.org/support/plugin/miniorange-login-openid/" target="_blank"><?php echo esc_attr( mo_sl( 'Forum' ) ); ?></a></td>
-					<td> <a id="addon" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button" <?php echo $active_tab == 'add_on' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'add_on' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Add On' ) ); ?></a></td>
-					<td> <a id="doc_tab" style="margin-top: 23px;background: #0867B2;border-color: #0867B2;color: white;" class="button"<?php echo $active_tab == 'doc_tab' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'doc_tab' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Documentation' ) ); ?></a></td>
-					<td> <a id="reports" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'reports' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'reports' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Reports' ) ); ?></a></td>
-					<td> <a id="pricing" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'licensing_plans' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>" onclick="mo_openid_extension_switch()"><?php echo esc_attr( mo_sl( 'Upgrade Now' ) ); ?></a></td>
+					<td> <a id="addon" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button" <?php echo $active_tab == 'add_on' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'add_on' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Add On' ) ); ?></a></td>
+					<td> <a id="doc_tab" style="margin-top: 23px;background: #0867B2;border-color: #0867B2;color: white;" class="button"<?php echo $active_tab == 'doc_tab' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'doc_tab' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Documentation' ) ); ?></a></td>
+					<td> <a id="reports" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'reports' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'reports' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Reports' ) ); ?></a></td>
+					<td> <a id="pricing" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'licensing_plans' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>" onclick="mo_openid_extension_switch()"><?php echo esc_attr( mo_sl( 'Upgrade Now' ) ); ?></a></td>
 					<td>
 				</tr>
 			</table>
@@ -1003,31 +998,31 @@ function mo_comment_openid() {
 				if ( $active_tab == 'select_applications' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'select_applications' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Select Applications' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'select_applications' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Select Applications' ) ); ?></a>
 				<a id="display_options" class="tablinks
 				<?php
 				if ( $active_tab == 'display_options' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'display_options' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Display options' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'display_options' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Display options' ) ); ?></a>
 				<a id="customize_text" class="tablinks
 				<?php
 				if ( $active_tab == 'customize_text' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'customize_text' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Customization' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'customize_text' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Customization' ) ); ?></a>
 				<a id="enable_comment" class="tablinks
 				<?php
 				if ( $active_tab == 'enable_comment' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'enable_comment' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Enable and Add Social Comments' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'enable_comment' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Enable and Add Social Comments' ) ); ?></a>
 				<a id="comment_shortcode" class="tablinks
 				<?php
 				if ( $active_tab == 'comment_shortcode' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'comment_shortcode' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Shortcodes' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'comment_shortcode' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Shortcodes' ) ); ?></a>
 
 
 
@@ -1084,7 +1079,6 @@ function mo_comment_openid() {
 
 
 		</div></div>
-	<script type="text/javascript" src= "<?php echo esc_url( plugins_url( '/includes/js/mo_openid_phone.js', __FILE__ ) ); ?>"></script>
 
 	<input type="button" id="mymo_btn" style="display: none" class="mo_support-help-button" data-show="false" onclick="mo_openid_support_form('')" value="<?php echo esc_attr( mo_sl( 'NEED HELP' ) ); ?>">
 
@@ -1187,7 +1181,7 @@ function mo_comment_openid() {
 
 function mo_openid_addon_desc_page() {
 
-	if ( isset( $_GET['tab'] ) && sanitize_text_field( $_GET['tab'] ) !== 'register' ) { // phpcs:ignore WordPress.Security.NonceVerification
+	if ( isset( $_GET['tab'] ) && sanitize_text_field( wp_unslash( $_GET['tab'] ) ) !== 'register' ) { // phpcs:ignore WordPress.Security.NonceVerification
         $active_tab = sanitize_text_field($_GET[ 'tab' ]); // phpcs:ignore
 	}     elseif (isset($_REQUEST) && sanitize_text_field($_REQUEST['page']) == 'mo_openid_settings_addOn') // phpcs:ignore
 		$active_tab = 'custom_registration_form';
@@ -1250,10 +1244,10 @@ function mo_openid_addon_desc_page() {
 				<td><img id="logo" style="margin-top: 25px" src="<?php echo esc_url( plugin_dir_url( __FILE__ ) ); ?>includes/images/logo.png"></td>
 				<td>&nbsp;<a style="text-decoration:none" href="https://plugins.miniorange.com/" target="_blank"><h1 style="color: #c9302c">miniOrange Social Login &nbsp;</h1></a></td>
 				<td> <a id="forum" style="margin-top: 23px" class="button" <?php echo $active_tab == 'forum' ? 'nav-tab-active' : ''; ?>" href="https://wordpress.org/support/plugin/miniorange-login-openid/" target="_blank">Forum</a></td>
-				<td> <a id="doc_tab" style="margin-top: 23px;background: #0867B2;border-color: #0867B2;color: white;" class="button"<?php echo $active_tab == 'doc_tab' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'doc_tab' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Documentation' ) ); ?></a></td>
-				<td> <a id="reports" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'reports' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'reports' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Reports' ) ); ?></a></td>
-				<td> <a id="pricing" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'licensing_plans' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>" onclick="mo_openid_extension_switch()">Licensing Plans</a></td>
-				<td> <a id="mo_openid_go_back" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'mo_openid_go_back' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_openid_go_back' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">Social Login</a></td>
+				<td> <a id="doc_tab" style="margin-top: 23px;background: #0867B2;border-color: #0867B2;color: white;" class="button"<?php echo $active_tab == 'doc_tab' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'doc_tab' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Documentation' ) ); ?></a></td>
+				<td> <a id="reports" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'reports' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'reports' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Reports' ) ); ?></a></td>
+				<td> <a id="pricing" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'licensing_plans' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>" onclick="mo_openid_extension_switch()">Licensing Plans</a></td>
+				<td> <a id="mo_openid_go_back" style="margin-top: 23px;background: #FFA335;border-color: #FFA335;color: white;" class="button"<?php echo $active_tab == 'mo_openid_go_back' ? 'nav-tab-active' : ''; ?>" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_openid_go_back' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">Social Login</a></td>
 			</tr>
 		</table>
 	</div>
@@ -1271,55 +1265,55 @@ function mo_openid_addon_desc_page() {
 				if ( $active_tab == 'custom_registration_form' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'custom_registration_form' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">Custom Registration Form</a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'custom_registration_form' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">Custom Registration Form</a>
 				<a id="mo_woocommerce_add_on" class="tablinks
 				<?php
 				if ( $active_tab == 'mo_woocommerce_add_on' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_woocommerce_add_on' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'WooCommerce Add on' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_woocommerce_add_on' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'WooCommerce Add on' ) ); ?></a>
 				<a id="mo_buddypress_add_on" class="tablinks
 				<?php
 				if ( $active_tab == 'mo_buddypress_add_on' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_buddypress_add_on' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'BuddyPress Add on' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_buddypress_add_on' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'BuddyPress Add on' ) ); ?></a>
 				<a id="mo_mailchimp_add_on" class="tablinks
 				<?php
 				if ( $active_tab == 'mo_mailchimp_add_on' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_mailchimp_add_on' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'MailChimp Add on' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_mailchimp_add_on' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'MailChimp Add on' ) ); ?></a>
 				<a id="mo_hubspot_add_on" class="tablinks
 				<?php
 				if ( $active_tab == 'mo_hubspot_add_on' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_hubspot_add_on' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'HubSpot Add on' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_hubspot_add_on' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'HubSpot Add on' ) ); ?></a>
 				<a id="mo_discord_add_on" class="tablinks
 				<?php
 				if ( $active_tab == 'mo_discord_add_on' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_discord_add_on' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Discord Add on' ) ); ?></a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_discord_add_on' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'Discord Add on' ) ); ?></a>
 				<a id="mo_openid_go_back" class="tablinks
 				<?php
 				if ( $active_tab == 'mo_openid_go_back' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_openid_go_back' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">Go to Social Login</a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'mo_openid_go_back' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">Go to Social Login</a>
 				<a id="mo_openid_licensing" class="tablinks
 				<?php
 				if ( $active_tab == 'mo_openid_licensing_plans' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>" onclick="mo_openid_extension_switch()">Licensing Plans</a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>" onclick="mo_openid_extension_switch()">Licensing Plans</a>
 				<a id="profile_com" style="display: none;"> class="tablinks
 				<?php
 				if ( $active_tab == 'profile_com' ) {
 					echo '_active';}
 				?>
-				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'profile_com' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>">Profile</a>
+				" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'profile_com' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>">Profile</a>
 			</div>
 		</div>
 
@@ -1433,7 +1427,6 @@ function mo_openid_addon_desc_page() {
 				</div>
 			</div>
 		</div>
- <script type="text/javascript" src= "<?php echo esc_url( plugins_url( '/includes/js/mo_openid_phone.js', __FILE__ ) ); ?>"></script>
 		<input type="button" id="mymo_btn" style="display: none" class="mo_support-help-button" data-show="false" onclick="mo_openid_support_form('')" value="<?php echo esc_attr( mo_sl( 'NEED HELP' ) ); ?>">
 	</div>
 	<?php include 'view/support_form/miniorange_openid_support_form.php'; ?>

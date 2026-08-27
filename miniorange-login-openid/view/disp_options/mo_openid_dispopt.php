@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_openid_disp_opt() {  
 	$allowed_html = array(
 		'div' => array(
@@ -45,7 +49,7 @@ function mo_openid_disp_opt() {
 				</label>
 				<label class="mo_openid_note_style" style="cursor: auto"><?php echo esc_attr( mo_sl( "Don't find your login page in above options use" ) ); ?> <code id='1'>[miniorange_social_login]</code><i style= "width: 11px;height: 9px;padding-left:2px;padding-top:3px" class="far fa-fw fa-lg fa-copy mo_copy mo_copytooltip" onclick="copyToClipboard(this, '#1', '#shortcode_url_copy')"><span id="shortcode_url_copy" class="mo_copytooltiptext">Copy to Clipboard</span></i><?php echo esc_attr( mo_sl( 'to display social icons or' ) ); ?> <a style="cursor: pointer" onclick="mo_openid_support_form('')"><?php echo esc_attr( mo_sl( 'Contact Us' ) ); ?></a></label>
 				<br/><br/>
-				<b style="font-size:17px;"><?php echo esc_attr( mo_sl( 'Ultimate Member display options' ) ); ?> </b><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a><br><br>
+				<b style="font-size:17px;"><?php echo esc_attr( mo_sl( 'Ultimate Member display options' ) ); ?> </b><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a><br><br>
 
 				<label class="mo_openid_checkbox_container_disable">
 					<input disabled type="checkbox" id="ultimate_before_login_form" /><?php echo esc_attr( mo_sl( 'Before Ultimate Member Login Form Fields' ) ); ?>
@@ -68,7 +72,7 @@ function mo_openid_disp_opt() {
 					<span class="mo_openid_checkbox_checkmark"></span>
 				</label>
 				<br/><br/>
-				<b style="font-size:17px;"><?php echo esc_attr( mo_sl( 'MemberPress display options' ) ); ?> </b><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a><br><br>
+				<b style="font-size:17px;"><?php echo esc_attr( mo_sl( 'MemberPress display options' ) ); ?> </b><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a><br><br>
 
 				<label class="mo_openid_checkbox_container_disable">
 					<input disabled type="checkbox"/><?php echo esc_attr( mo_sl( 'After MemberPress Login Form' ) ); ?>
@@ -94,36 +98,36 @@ function mo_openid_disp_opt() {
 					<input type="checkbox" id="woocommerce_center_login_form" name="mo_openid_woocommerce_center_login_form" value="1" <?php checked( get_option( 'mo_openid_woocommerce_center_login_form' ) == 1 ); ?> /><?php echo esc_attr( mo_sl( "Before 'Remember Me' of WooCommerce Login Form" ) ); ?>
 					<span class="mo_openid_checkbox_checkmark"></span>
 				</label>
-				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'After WooCommerce Login Form' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'After WooCommerce Login Form' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 					<input type="checkbox"  /><br>
 					<span class="mo_openid_checkbox_checkmark_disable"></span>
 				</label>
 
-				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Before WooCommerce Registration Form' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Before WooCommerce Registration Form' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 					<input type="checkbox"  /><br>
 					<span class="mo_openid_checkbox_checkmark_disable"></span>
 				</label>
-				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( "Before 'Register button' of WooCommerce Registration Form" ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
-					<input type="checkbox"  /><br>
-					<span class="mo_openid_checkbox_checkmark_disable"></span>
-				</label>
-
-				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'After WooCommerce Registration Form' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( "Before 'Register button' of WooCommerce Registration Form" ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 					<input type="checkbox"  /><br>
 					<span class="mo_openid_checkbox_checkmark_disable"></span>
 				</label>
 
-				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Before WooCommerce Checkout Form' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'After WooCommerce Registration Form' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 					<input type="checkbox"  /><br>
 					<span class="mo_openid_checkbox_checkmark_disable"></span>
 				</label>
 
-				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'After WooCommerce Checkout Form' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Before WooCommerce Checkout Form' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+					<input type="checkbox"  /><br>
+					<span class="mo_openid_checkbox_checkmark_disable"></span>
+				</label>
+
+				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'After WooCommerce Checkout Form' ) ); ?><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 					<input type="checkbox"  /><br>
 					<span class="mo_openid_checkbox_checkmark_disable"></span>
 				</label>
 				<br/>
-				<b style="font-size: 17px;"><?php echo esc_attr( mo_sl( 'BuddyPress / BuddyBoss display options' ) ); ?> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></b><br><br>
+				<b style="font-size: 17px;"><?php echo esc_attr( mo_sl( 'BuddyPress / BuddyBoss display options' ) ); ?> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></b><br><br>
 
 				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Before BuddyPress / BuddyBoss Registration Form' ) ); ?>
 					<input type="checkbox"  /><br>
@@ -140,7 +144,7 @@ function mo_openid_disp_opt() {
 					<span class="mo_openid_checkbox_checkmark_disable"></span>
 				</label>
 				<br/>
-				<b style="font-size: 17px;"><?php echo esc_attr( mo_sl( 'Paid Memberships Pro display options' ) ); ?> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></b><br><br>
+				<b style="font-size: 17px;"><?php echo esc_attr( mo_sl( 'Paid Memberships Pro display options' ) ); ?> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a></b><br><br>
 
 				<label class="mo_openid_checkbox_container_disable"><?php echo esc_attr( mo_sl( 'Before Paid Memberships Pro Checkout Page Submit Button' ) ); ?>
 					<input type="checkbox"  /><br>
@@ -166,7 +170,7 @@ function mo_openid_disp_opt() {
 
 			<br/><b style="padding: 10px"><input type="submit" name="submit" value="<?php echo esc_attr( mo_sl( 'Save' ) ); ?>" style="width:150px;background-color:#0867b2;color:white;box-shadow:none;text-shadow: none;"  class="button button-primary button-large" /></b>
 
-			   <br><br> <label style="cursor: auto" class="mo_openid_note_style"> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>&nbsp;&nbsp;&nbsp;&nbsp;<?php echo esc_attr( mo_sl( 'These features are available in premium version only. To know more about the premium plugin ' ) ); ?><a href="https://plugins.miniorange.com/social-login-social-sharing "><?php echo esc_attr( mo_sl( 'click here' ) ); ?></a>.</label>
+			   <br><br> <label style="cursor: auto" class="mo_openid_note_style"> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>&nbsp;&nbsp;&nbsp;&nbsp;<?php echo esc_attr( mo_sl( 'These features are available in premium version only. To know more about the premium plugin ' ) ); ?><a href="https://plugins.miniorange.com/social-login-social-sharing "><?php echo esc_attr( mo_sl( 'click here' ) ); ?></a>.</label>
 				<h3  id="mo_openid_show_add_login_icons" onclick="show_license_options1(this.id)"><a id="openid_login_shortcode_title"  aria-expanded="false" ><span class="dashicons dashicons-arrow-down " ></span><?php echo esc_attr( mo_sl( 'Add Login Icons' ) ); ?></a></h3>
 				<div id="openid_login_shortcode" style="font-size:13px !important">
 					<ol>

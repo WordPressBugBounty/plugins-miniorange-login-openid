@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_custom_registration_form() { ?>
 	<div class="mo_openid_table_layout" id="customization_ins" style="display: block">
 		<table>

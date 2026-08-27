@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 
 class mo_google {
 
@@ -7,6 +11,7 @@ class mo_google {
 	public $scope     = 'email+profile';
 	public $video_url = 'https://www.youtube.com/embed/q7nK1lp7yqc';
 	public $instructions;
+	public $site_url;
 	public function __construct() {
 		$this->site_url     = get_option( 'siteurl' );
 		$this->instructions = "Visit the Google website for developers <a href=\"https://console.developers.google.com/project/\" target=\"_blank\">console.developers.google.com</a>.
@@ -14,7 +19,7 @@ class mo_google {
                                 ##Click on Left side Menu and go to <b>APIs & Services</b> -> <b>OAuth consent screen</b>.
                                 ##Click on <b>Select a Project</b> and select the newly created Project by clicking on the project name that you entered in the previous step. 
                                 ##Select <b>External</b> as user type and click on <b>Create</b>.
-                                ##You are prompted to Edit App Registration, Enter all the Required details (AppName & User support Email) Add Authorized domain as <b><code id='11'>" . sanitize_text_field( $_SERVER['HTTP_HOST'] ) . "</code><i style= \"width: 11px;height: 9px;padding-left:2px;padding-top:3px\" class=\"far fa-fw fa-lg fa-copy mo_copy mo_copytooltip\" onclick=\"copyToClipboard(this, '#11', '#shortcode_url_copy1')\"><span id=\"shortcode_url_copy1\" class=\"mo_copytooltiptext\">Copy to Clipboard</span></i></b>. 
+                                ##You are prompted to Edit App Registration, Enter all the Required details (AppName & User support Email) Add Authorized domain as <b><code id='11'>" . ( isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '' ) . "</code><i style= \"width: 11px;height: 9px;padding-left:2px;padding-top:3px\" class=\"far fa-fw fa-lg fa-copy mo_copy mo_copytooltip\" onclick=\"copyToClipboard(this, '#11', '#shortcode_url_copy1')\"><span id=\"shortcode_url_copy1\" class=\"mo_copytooltiptext\">Copy to Clipboard</span></i></b>. 
                                 ##On the Scopes screen click on <b>Add or Remove Scopes</b>. Check  and <b>.../auth/userinfo.email</b> and <b>.../auth/userinfo.profile</b>. Click on <b>Update</b>. Scroll down, Click on <b>Save and Continue</b>.
                                 ##From the Left side Menu, Click on <b>Credentials</b> then click on <b>Create Credential</b> from dropdown select <b>Oauth client ID</b>. 
                                 ##From <b>Application Type</b> drop down, Select <b>Web Application</b>. 
@@ -32,7 +37,7 @@ class mo_google {
 		$_SESSION['appname'] = 'google';
 		$client_id           = $appslist['google']['clientid'];
 		$scope               = $appslist['google']['scope'];
-		$login_dialog_url    = 'https://accounts.google.com/o/oauth2/auth?redirect_uri=' . $social_app_redirect_uri . '&response_type=code&client_id=' . $client_id . '&scope=' . $scope . '&access_type=offline';
+		$login_dialog_url    = 'https://accounts.google.com/o/oauth2/auth?redirect_uri=' . $social_app_redirect_uri . '&response_type=code&client_id=' . $client_id . '&scope=' . $scope . '&access_type=offline&state=' . rawurlencode( mo_openid_get_current_oauth_state() );
 		header( 'Location:' . $login_dialog_url );
 		exit;
 	}

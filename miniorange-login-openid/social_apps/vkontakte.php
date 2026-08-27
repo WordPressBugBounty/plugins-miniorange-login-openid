@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 
 class mo_vkontakte {
 
@@ -7,6 +11,7 @@ class mo_vkontakte {
 	public $scope     = 'friends,photos,email';
 	public $video_url = 'https://www.youtube.com/embed/DmF-jflxQ9o';
 	public $instructions;
+	public $site_url;
 
 
 	public function __construct() {
@@ -25,7 +30,7 @@ class mo_vkontakte {
 		$_SESSION['appname'] = 'vkontakte';
 		$client_id           = $appslist['vkontakte']['clientid'];
 		$scope               = $appslist['vkontakte']['scope'];
-		$login_dialog_url    = 'https://oauth.vk.com/authorize?client_id=' . $client_id . '&scope=' . $scope . '&response_type=code&redirect_uri=' . $social_app_redirect_uri . '&v=5.131';
+		$login_dialog_url    = 'https://oauth.vk.com/authorize?client_id=' . $client_id . '&scope=' . $scope . '&response_type=code&redirect_uri=' . $social_app_redirect_uri . '&v=5.131&state=' . rawurlencode( mo_openid_get_current_oauth_state() );
 		header( 'Location:' . $login_dialog_url );
 		exit;
 	}

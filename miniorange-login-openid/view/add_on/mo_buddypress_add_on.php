@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_buddypress_addon_display() {  ?>
 	<div id="bp_addon_head" style="display: block">
 		<table>

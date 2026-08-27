@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_openid_redirect_opt() {     ?>
 	<form id="mo_openid_redirect" name="redirect" method="post" action="">
 		<input type="hidden" name="option" value="mo_openid_enable_redirect" />
@@ -119,7 +123,7 @@ function mo_openid_redirect_opt() {     ?>
 				<tr>
 					<td>
 						<br><br>
-						<label class="mo_openid_checkbox_container_disable"> <b>  <?php echo esc_attr( mo_sl( 'Enable Registration Redirection' ) ); ?></b><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+						<label class="mo_openid_checkbox_container_disable"> <b>  <?php echo esc_attr( mo_sl( 'Enable Registration Redirection' ) ); ?></b><a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 							<input type="checkbox"  /><br>
 							<span class="mo_openid_checkbox_checkmark_disable"></span>
 						</label>

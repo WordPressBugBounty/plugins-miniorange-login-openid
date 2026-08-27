@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_openid_display_share_opt() {
 	?>
 
@@ -117,11 +121,11 @@ function mo_openid_display_share_opt() {
 					</div>
 						<br>
 
-						<label class="mo_openid_checkbox_container_disable "> <?php echo esc_attr( mo_sl( ' WooCommerce Individual Product Page(Top)' ) ); ?> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+						<label class="mo_openid_checkbox_container_disable "> <?php echo esc_attr( mo_sl( ' WooCommerce Individual Product Page(Top)' ) ); ?> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 							<input type="checkbox" id="mo_apps_wc_sp_page_top"  name="mo_share_options_wc_sp_summary_top"  value="1"  >
 							<span class="mo_openid_checkbox_checkmark "></span>
 						</label>
-						<label class="mo_openid_checkbox_container_disable "> <?php echo esc_attr( mo_sl( 'Below WooCommerce Product' ) ); ?> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+						<label class="mo_openid_checkbox_container_disable "> <?php echo esc_attr( mo_sl( 'Below WooCommerce Product' ) ); ?> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 							<input type="checkbox" id="mo_apps_wc_product"  name="mo_share_options_wc_product"  value="1" >
 						<span class="mo_openid_checkbox_checkmark "></span>
 						</label>
@@ -130,7 +134,7 @@ function mo_openid_display_share_opt() {
 					<div id="upright" style="font-size: 14px;">
 						<br>
 
-						<label class="mo_openid_checkbox_container_disable"> <?php echo esc_attr( mo_sl( 'WooCommerce Individual Product Page' ) ); ?> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
+						<label class="mo_openid_checkbox_container_disable"> <?php echo esc_attr( mo_sl( 'WooCommerce Individual Product Page' ) ); ?> <a style="left: 1%; position: relative; text-decoration: none" class="mo-openid-premium" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'PRO' ) ); ?></a>
 							<input type="checkbox" id="mo_apps_wc_sp_page"  name="mo_share_options_wc_sp_summary"  value="1">
 							<span class="mo_openid_checkbox_checkmark"></span>
 						</label>

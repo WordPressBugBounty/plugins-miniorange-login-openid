@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 
 class mo_linkedin
 {
@@ -7,6 +11,7 @@ class mo_linkedin
     public $scope="r_liteprofile r_emailaddress w_member_social";
     public $video_url="https://www.youtube.com/embed/Qs-PSyy7KVQ";
     public $instructions;
+    public $site_url;
     public function __construct() {
         $this->site_url = get_option( 'siteurl' );
         $this->instructions="Go to <a href=\"http://developer.linkedin.com/\" target=\"_blank\">http://developer.linkedin.com/</a> and click on <strong>Create Apps</strong> and sign in with your linkedin account.##Enter the Application Name, Linkedin page URl or name, Privacy Policy URL, And upload app logo.##If you don't have a linked in page click on <a href=\"https://www.linkedin.com/company/setup/new/\" target=\"_blank\">https://www.linkedin.com/company/setup/new/</a> to create a new page.##Check the <b>API Terms of Use</b> and click on create app.##Click on <b>Auth</b> tab and enter <b><code id='11'>".mo_get_permalink('linkedin')."</code><i style= \"width: 11px;height: 9px;padding-left:2px;padding-top:3px\" class=\"fa fa-fw fa-lg fa-copy mo_copy mo_openid_copytooltip\" onclick=\"copyToClipboard(this, '#11', '#shortcode_url_copy')\"><span id=\"shortcode_url_copy\" class=\"mo_openid_copytooltiptext\">Copy to Clipboard</span></i></b> as <strong>Redirect URLs </strong>and click on <strong>Update</strong>##On the same page you will be able to see your <strong>Client ID</strong> and <strong>Client Secret</strong> under the <strong>Application credentials</strong> section. Copy these and Paste them into the fields above. ##Go to the <b>Product tab</b>.##For <b>r_liteprofile</b> and <b>r_emailaddress</b> scope permission, Find <b>Sign In with LinkedIn</b> and click on <b>Select</b>. Check the legal agreement check box and Click on <b>Add Product</b>.## For <b>w_member_social </b> scope permission Find <b>Share on LinkedIn</b> and click on <b>Select</b>.Check the legal agreement check box and Click on <b>Add Product</b>, This permission required for social sharing.##Wait till Linkedin approves your permission. ##Click on the Save settings button.##Go to Social Login tab to configure the display as well as other login settings";
@@ -20,7 +25,7 @@ class mo_linkedin
         $_SESSION["appname"] = 'linkedin';
         $client_id = $appslist['linkedin']['clientid'];
         $scope = $appslist['linkedin']['scope'];
-        $login_dialog_url ='https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id='.$client_id.'&redirect_uri=' . $social_app_redirect_uri .'&state=fooobar&scope=' . $scope;
+        $login_dialog_url ='https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id='.$client_id.'&redirect_uri=' . $social_app_redirect_uri .'&state=' . rawurlencode( mo_openid_get_current_oauth_state() ) . '&scope=' . $scope;
         header('Location:'. $login_dialog_url);
         exit;
     }
@@ -55,7 +60,7 @@ class mo_linkedin
         $result = wp_remote_get($profile_url_email,$args);
         if(is_wp_error($result)){
             update_option( 'mo_openid_test_configuration', 0);
-            echo $result['body'];
+            echo esc_html( $result->get_error_message() );
             exit();
         }
         $profile_json_output_email = json_decode($result['body'], true);

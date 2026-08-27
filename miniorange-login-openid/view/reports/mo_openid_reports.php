@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_reports() {  ?>
 <div class = "mo_openid_mywatermark">
 	<label for="select_display" style="color: #1c1c1c; text-align: left; font-weight: bold;">SELECT USER TYPE: </label>

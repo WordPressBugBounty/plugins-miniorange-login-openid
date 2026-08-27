@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 
 class mo_yahoo {
 
@@ -7,6 +11,7 @@ class mo_yahoo {
 	public $scope     = 'read';
 	public $video_url = 'https://www.youtube.com/embed/LVPqnIicAZQ';
 	public $instructions;
+	public $site_url;
 	public function __construct() {
 		if ( get_option( 'permalink_structure' ) !== '' ) {
 			$this->site_url     = get_option( 'siteurl' );
@@ -22,7 +27,7 @@ class mo_yahoo {
 		mo_openid_start_session();
 		$_SESSION['appname'] = 'yahoo';
 		$client_id           = $appslist['yahoo']['clientid'];
-		$login_dialog_url    = 'https://api.login.yahoo.com/oauth2/request_auth?client_id=' . $client_id . '&redirect_uri=' . $social_app_redirect_uri . '&response_type=code&language=en-us';
+		$login_dialog_url    = 'https://api.login.yahoo.com/oauth2/request_auth?client_id=' . $client_id . '&redirect_uri=' . $social_app_redirect_uri . '&response_type=code&language=en-us&state=' . rawurlencode( mo_openid_get_current_oauth_state() );
 		header( 'Location:' . $login_dialog_url );
 		exit;
 	}

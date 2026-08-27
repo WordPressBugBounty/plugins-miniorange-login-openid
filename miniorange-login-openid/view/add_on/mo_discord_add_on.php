@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function mo_openid_discord_add_on_display() { ?>
 	<div id="dis_adv_disp" style="display: block">
 		<table>

@@ -1,4 +1,8 @@
 <?php
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 function mo_openid_configure_recaptcha() {
 	?>
 	<form>
@@ -75,7 +79,7 @@ function mo_openid_configure_recaptcha() {
 		</table>
 		<script>
 			//to set heading name
-			var temp = jQuery("<a style=\"left: 1%; padding:4px; position: relative; text-decoration: none\" class=\"mo-openid-premium\" href=\"<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>\">PRO</a>");
+			var temp = jQuery("<a style=\"left: 1%; padding:4px; position: relative; text-decoration: none\" class=\"mo-openid-premium\" href=\"<?php echo esc_attr( add_query_arg( array( 'tab' => 'licensing_plans' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>\">PRO</a>");
 
 			var win_height = jQuery('#mo_openid_menu_height').height();
 			//win_height=win_height+18;
@@ -97,7 +101,7 @@ function mo_openid_configure_recaptcha() {
 		<input type="hidden" name="option" value="mo_openid_enable_gdpr" />
 		<input type="hidden" name="mo_openid_enable_gdpr_nonce" value="<?php echo esc_attr( wp_create_nonce( 'mo-openid-enable-gdpr-nonce' ) ); ?>"/>
 		<div class="mo_openid_table_layout">
-			<label class=" mo_openid_note_style" style="font-size:small;padding:22px;"><?php echo esc_attr( mo_sl( 'If GDPR check is enabled, users will be asked to give consent before using Social Login. Users who will not give consent will not be able to log in. This setting stands true only when users are registering using Social Login. This will not interfere with users registering through the regular WordPress' ) ); ?>.<br><br>(<?php echo esc_attr( mo_sl( 'Click' ) ); ?> <a target="_blank" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'privacy_policy' ), sanitize_text_field( $_SERVER['REQUEST_URI'] ) ) ); ?>"><?php echo esc_attr( mo_sl( 'here' ) ); ?> </a> <?php echo esc_attr( mo_sl( "to read miniOrange Social Login Privacy Policy. Please update your website's privacy policy accordingly and enter the URL to your privacy policy below." ) ); ?></label>
+			<label class=" mo_openid_note_style" style="font-size:small;padding:22px;"><?php echo esc_attr( mo_sl( 'If GDPR check is enabled, users will be asked to give consent before using Social Login. Users who will not give consent will not be able to log in. This setting stands true only when users are registering using Social Login. This will not interfere with users registering through the regular WordPress' ) ); ?>.<br><br>(<?php echo esc_attr( mo_sl( 'Click' ) ); ?> <a target="_blank" href="<?php echo esc_attr( add_query_arg( array( 'tab' => 'privacy_policy' ), ( isset( $_SERVER['REQUEST_URI'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ) : '' ) ) ); ?>"><?php echo esc_attr( mo_sl( 'here' ) ); ?> </a> <?php echo esc_attr( mo_sl( "to read miniOrange Social Login Privacy Policy. Please update your website's privacy policy accordingly and enter the URL to your privacy policy below." ) ); ?></label>
 			<br/>
 			<label class="mo_openid_checkbox_container"><?php echo esc_attr( mo_sl( 'Take consent from users' ) ); ?>
 				<input style="padding-left: 15px" type="checkbox" id="mo_openid_gdpr_consent_" name="mo_openid_gdpr_consent_enable" value="1"

@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 
 class mo_amazon {
 
@@ -7,6 +11,7 @@ class mo_amazon {
 	public $scope     = 'profile';
 	public $video_url = 'https://www.youtube.com/embed/yMjufls41dg';
 	public $instructions;
+	public $site_url;
 	public function __construct() {
 		$this->site_url     = get_option( 'siteurl' );
 		$this->instructions = "Go to <a href=\"http://login.amazon.com\" target=\"_blank\">http://login.amazon.com</a> and sign in with your amazon developer account.##On the developer homepage, in the upper right corner, click <strong>Developer Console</strong>.##On the Developer Console homepage, click <strong>Login with Amazon</strong>, Click on the <strong>Create a New Security Profile</strong> button and enter a <strong>Name, Description, and Privacy Notice URL</strong> for your app. Click on Save.##click the configuration icon in the <strong>Manage</strong> column and then click <strong>Web Settings</strong>.##Enter <b><code id='12'>" . mo_get_permalink( 'amazon' ) . "</code><i style= \"width: 11px;height: 9px;padding-left:2px;padding-top:3px\" class=\"far fa-fw fa-lg fa-copy mo_copy mo_copytooltip\" onclick=\"copyToClipboard(this, '#12', '#shortcode_url_copy')\"><span id=\"shortcode_url_copy\" class=\"mo_copytooltiptext\">Copy to Clipboard</span></i></b> in the <strong>Allowed Return URLs</strong>##  Copy the Client Id and Client Secret from the Web Settings and Paste them into the fields above. ##Click on the Save settings button.##Go to Social Login tab to configure the display as well as other login settings";
@@ -20,7 +25,7 @@ class mo_amazon {
 		$_SESSION['appname'] = 'amazon';
 		$client_id           = $appslist['amazon']['clientid'];
 		$scope               = $appslist['amazon']['scope'];
-		$login_dialog_url    = 'https://www.amazon.com/ap/oa?client_id=' . $client_id . '&scope=' . $scope . '&redirect_uri=' . $social_app_redirect_uri . '&response_type=code';
+		$login_dialog_url    = 'https://www.amazon.com/ap/oa?client_id=' . $client_id . '&scope=' . $scope . '&redirect_uri=' . $social_app_redirect_uri . '&response_type=code&state=' . rawurlencode( mo_openid_get_current_oauth_state() );
 		header( 'Location:' . $login_dialog_url );
 		exit;
 	}

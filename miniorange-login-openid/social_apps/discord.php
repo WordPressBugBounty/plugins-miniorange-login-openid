@@ -1,5 +1,9 @@
 <?php
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 
 class mo_discord {
 
@@ -7,6 +11,7 @@ class mo_discord {
 	public $scope     = 'identify+email';
 	public $video_url = 'https://www.youtube.com/embed/zryQ0xE5sKA';
 	public $instructions;
+	public $site_url;
 	public function __construct() {
 		$this->site_url     = get_option( 'siteurl' );
 		$this->instructions = "Go to <a href=\"https://discordapp.com/developers\" target=\"_blank\">https://discordapp.com/developers/applications</a> and sign in with your discordapp developer account.##On the page, Click on the <strong>New Application</strong> button and enter a <strong>Name</strong> for your app. Click on Save.##Click on <strong>OAuth2</strong> form left section.</li><li>Click on <b>Add redirect</b> and Enter <b><code id='4'>" . mo_get_permalink( 'discord' ) . "</code><i style= \"width: 11px;height: 9px;padding-left:2px;padding-top:3px\" class=\"far fa-fw fa-lg fa-copy mo_copy mo_copytooltip\" onclick=\"copyToClipboard(this, '#4', '#shortcode_url4_copy')\"><span id=\"shortcode_url4_copy\" class=\"mo_copytooltiptext mo_copy\">Copy to Clipboard</span></i></b> in that ##Copy the Client Id and Client Secret from the <b>General information</b> and Paste them into the fields above.##Enter <b>identify</b> as Scope.##Click on the Save settings button.##Go to Social Login tab to configure the display as well as other login settings.";
@@ -19,7 +24,7 @@ class mo_discord {
 		$_SESSION['appname'] = 'discord';
 		$client_id           = $appslist['discord']['clientid'];
 		$scope               = $appslist['discord']['scope'];
-		$login_dialog_url    = 'https://discordapp.com/api/oauth2/authorize?response_type=code&client_id=' . $client_id . '&scope=' . $scope . '&redirect_uri=' . $social_app_redirect_uri;
+		$login_dialog_url    = 'https://discordapp.com/api/oauth2/authorize?response_type=code&client_id=' . $client_id . '&scope=' . $scope . '&redirect_uri=' . $social_app_redirect_uri . '&state=' . rawurlencode( mo_openid_get_current_oauth_state() );
 		header( 'Location:' . $login_dialog_url );
 		exit;
 	}
