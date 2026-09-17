@@ -51,7 +51,10 @@ function mo_openid_app_instructions_action() {
 		wp_die( '<strong>ERROR WPSL36</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
 	} else {
 		if ( current_user_can( 'administrator' ) ) {
-			$social_app   = ( isset( $_POST['app_name'] ) ? sanitize_text_field( wp_unslash( $_POST['app_name'] ) ) : '' );
+			$social_app   = strtolower( ( isset( $_POST['app_name'] ) ? sanitize_text_field( wp_unslash( $_POST['app_name'] ) ) : '' ) );
+			if ( ! mo_openid_validate_social_app( $social_app ) ) {
+				wp_send_json_error( 'Invalid app.' );
+			}
 			$instructions = PLUGIN_URL . $social_app . '.png##';
 			$appslist     = maybe_unserialize( get_option( 'mo_openid_apps_list' ) );
 			if ( $appslist != '' ) {

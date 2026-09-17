@@ -130,6 +130,25 @@ function mo_openid_validate_social_app($appname) {
     return in_array(strtolower($appname), $allowed_apps);
 }
 
+function mo_openid_get_allowed_sharing_apps() {
+    return array(
+        'facebook',
+        'twitter',
+        'google',
+        'vkontakte',
+        'tumblr',
+        'stumble',
+        'linkedin',
+        'reddit',
+        'pinterest',
+        'pocket',
+        'digg',
+        'mail',
+        'print',
+        'whatsapp',
+    );
+}
+
 /**
  * Confirms the admin has actually saved client credentials for a whitelisted app, wp_die()ing
  * with a clear message otherwise.
@@ -426,11 +445,14 @@ function mo_openid_process_user_details( $appuserdetails, $appname ) {
 		'social_user_id'  => $social_user_id,
 	);
 	mo_openid_start_session_login( $session_values );
+	$_SESSION['appname'] = $appname;
+	$allowed_html = array('style'=> array(), 'head'=> array(), 'meta'=> array('name'=>array(), 'content'=>array(), ), 'link'=>array('rel'=>array(), 'href'=> array(), 'type'=> array(), 'media' => array()), 'body'=> array('class'=> array()), 'div'=> array('style'=> array(), 'class'=>array(), 'id'=> array()), 'form'=> array('name'=> array(), 'method'=> array(), 'action'=> array()), 'span'=> array('style'=> array(), 'class'=> array(), 'align'=> array()), 'p'=> array(), 'br' => array(), 'label' => array('for' => array()), 'input' => array('type'=> array(), 'class'=>array(), 'name'=> array(),'size'=> array(), 'value'=> array()) );
 	// user is a member
 	if ( ( isset( $linked_email_id ) ) || ( isset( $email_user_id ) ) || ( isset( $existing_email_user_id ) ) ) {
+		$already_linked_identity = isset( $linked_email_id );
+
 		if ( ( ! isset( $linked_email_id ) ) && ( isset( $email_user_id ) ) ) {
 			$linked_email_id = $email_user_id;
-			mo_openid_insert_query( $appname, $user_email, $linked_email_id, $social_user_id );
 		}
 		if ( isset( $linked_email_id ) ) {
 			$user    = get_user_by( 'id', $linked_email_id );
@@ -443,13 +465,22 @@ function mo_openid_process_user_details( $appuserdetails, $appname ) {
 			$user_id = $user->ID;
 		}
 
-		// $linked_email_id,$user_id,$user,$user_picture
-		mo_openid_login_user( $linked_email_id, $user_id, $user, $user_picture, 1 );
+		if ( $already_linked_identity ) {
+			// $linked_email_id,$user_id,$user,$user_picture
+			mo_openid_login_user( $linked_email_id, $user_id, $user, $user_picture, 1 );
+		} else {
+			$send_content = send_otp_token( $user_email );
+			if ( $send_content['status'] == 'FAILURE' ) {
+				$message = 'Error Code 4: ' . get_option( 'mo_email_failure_message' );
+				wp_die( esc_attr( $message ) );
+			}
+			echo wp_kses( mo_openid_validate_otp_form( $user_name, $user_email, $user_picture, $user_url, $last_name, $user_full_name, $first_name, $appname, $social_user_id ), $allowed_html );
+			exit;
+		}
 	}
 
 	// new user creation
 	if ( get_option( 'mo_openid_auto_register_enable' ) ) {
-		$allowed_html = array('style'=> array(), 'head'=> array(), 'meta'=> array('name'=>array(), 'content'=>array(), ), 'link'=>array('rel'=>array(), 'href'=> array(), 'type'=> array(), 'media' => array()), 'body'=> array('class'=> array()), 'div'=> array('style'=> array(), 'class'=>array(), 'id'=> array()), 'form'=> array('name'=> array(), 'method'=> array(), 'action'=> array()), 'span'=> array('style'=> array(), 'class'=> array(), 'align'=> array()), 'p'=> array(), 'br' => array(), 'label' => array('for' => array()), 'input' => array('type'=> array(), 'class'=>array(), 'name'=> array(),'size'=> array(), 'value'=> array()) );
 		if ( get_option( 'mo_openid_enable_profile_completion' ) && ( $session_values['user_email'] == '' || $session_values['username'] == '' ) ) { // if newa user and profile completion is enabled
 			echo wp_kses( mo_openid_profile_completion_form( $session_values ), $allowed_html );
 			exit;
@@ -1519,13 +1550,17 @@ function mo_openid_share_action() {
 	} else {
 		if ( current_user_can( 'administrator' ) ) {
 			$enable_id = ( isset( $_POST['enabled'] ) ? sanitize_text_field( wp_unslash( $_POST['enabled'] ) ) : '' );
+			$id_name   = ( isset( $_POST['id_name'] ) ? sanitize_text_field( wp_unslash( $_POST['id_name'] ) ) : '' );
+
+			if ( ! preg_match( '/^mo_openid_([a-z_]+)_share_enable$/', $id_name, $id_name_matches )
+				|| ! in_array( $id_name_matches[1], mo_openid_get_allowed_sharing_apps(), true ) ) {
+				wp_send_json_error( 'Invalid app.' );
+			}
 
 			if ( $enable_id == 'true' ) {
-
-				update_option( ( isset( $_POST['id_name'] ) ? sanitize_text_field( wp_unslash( $_POST['id_name'] ) ) : '' ), 1 );
+				update_option( $id_name, 1 );
 			} elseif ( $enable_id == 'false' ) {
-
-				update_option( ( isset( $_POST['id_name'] ) ? sanitize_text_field( wp_unslash( $_POST['id_name'] ) ) : '' ), 0 );
+				update_option( $id_name, 0 );
 			}
 		}
 	}

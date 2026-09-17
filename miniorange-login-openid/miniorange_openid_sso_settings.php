@@ -8,14 +8,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Plugin Name: Social Login, Social Sharing by miniOrange
  * Plugin URI: https://www.miniorange.com
  * Description: Allow your users to login, comment and share with Facebook, Google, Apple, Twitter, LinkedIn etc using customizable buttons.
- * Version: 7.9.0
+ * Version: 7.9.1
  * Requires at least: 4.4
  * Author: <a href="https://www.miniorange.com/">miniOrange</a>
  * License: Expat
  * License URI: https://plugins.miniorange.com/mit-license
  */
 
-define( 'MO_OPENID_SOCIAL_LOGIN_VERSION', '7.9.0' );
+define( 'MO_OPENID_SOCIAL_LOGIN_VERSION', '7.9.1' );
 define( 'PLUGIN_URL', esc_url( plugin_dir_url( __FILE__ ) ) . 'includes/images/icons/' );
 define( 'MOSL_PLUGIN_DIR', str_replace( '/', '\\', plugin_dir_path( __FILE__ ) ) );
 require 'miniorange_openid_sso_settings_page.php';
@@ -38,7 +38,7 @@ class miniorange_openid_sso_settings {
 		register_activation_hook( __FILE__, array( $this, 'mo_openid_activate' ) );
 		register_deactivation_hook( __FILE__, array( $this, 'mo_openid_deactivate' ) );
 
-		add_action( 'plugins_loaded', array( $this, 'social_load_textdomain' ) );
+		add_action( 'init', array( $this, 'social_load_textdomain' ) );
 		add_action( 'admin_menu', array( $this, 'new_miniorange_openid_menu' ) );
 		add_action( 'admin_init', array( $this, 'miniorange_openid_save_settings' ) );
 		add_action( 'init', 'mo_openid_login_validate', 1 );

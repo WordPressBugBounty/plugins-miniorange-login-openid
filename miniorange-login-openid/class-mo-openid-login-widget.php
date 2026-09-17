@@ -1498,7 +1498,12 @@ function mo_openid_login_validate() {
 			$decrypted_app_name = ( isset( $_POST['decrypted_app_name'] ) ? sanitize_text_field( wp_unslash( $_POST['decrypted_app_name'] ) ) : '' );
 			$decrypted_user_id  = ( isset( $_POST['decrypted_user_id'] ) ? sanitize_text_field( wp_unslash( $_POST['decrypted_user_id'] ) ) : '' );
 			if ( isset( $_POST['resend_otp'] ) ) {
-				$send_content = send_otp_token( $user_email );
+				$resend_email = isset( $_SESSION['mo_otp_email'] ) ? sanitize_email( $_SESSION['mo_otp_email'] ) : '';
+				if ( empty( $resend_email ) ) {
+					wp_die( esc_html__( 'Invalid request. Please initiate login from the social login button.', 'miniorange-login-openid' ) );
+				}
+				$user_email   = $resend_email;
+				$send_content = send_otp_token( $resend_email );
 				if ( $send_content['status'] == 'FAILURE' ) {
 					$message = 'Error Code 3: ' . get_option( 'mo_email_failure_message' );
 					wp_die( esc_attr( $message ) );
