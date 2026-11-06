@@ -233,7 +233,7 @@ function mo_register_openid() {
 								<?php
 								switch ( $active_tab ) {
 									case 'config_apps':
-										mo_openid_show_apps();
+										mo_openid_show_apps_with_promo();
 										break;
 									case 'customise_social_icons':
 										mo_openid_customise_social_icons();

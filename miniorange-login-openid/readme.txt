@@ -4,7 +4,7 @@ Donate link: https://www.miniorange.com
 Tags: social login, Facebook, Google, LinkedIn, X(Twitter)
 Requires at least: 4.4
 Tested up to: 7.1
-Stable tag: 7.9.1
+Stable tag: 7.9.2
 Requires PHP: 7.0
 License: Expat
 License URI: https://plugins.miniorange.com/mit-license
@@ -277,6 +277,9 @@ Please email us at info@miniorange.com. You can also submit your query from the 
 16. Social Sharing icons without background.
 
 ==Changelog==
+= 7.9.2 =
+* Added miniOrange Secure MCP Server plugin promotion in the Configure Apps tab.
+
 = 7.9.1 =
 * Security fixes.
 
@@ -1074,6 +1077,9 @@ SECURITY FIXES
 * First version of Social Login, Social Sharing plugin.
 
 == Upgrade Notice ==
+= 7.9.2 =
+* Added miniOrange Secure MCP Server plugin promotion in the Configure Apps tab.
+
 = 7.9.1 =
 * Security fixes.
 

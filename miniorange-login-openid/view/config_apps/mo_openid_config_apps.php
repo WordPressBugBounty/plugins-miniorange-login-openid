@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 // configure apps menu page
-function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ //phpcs:ignore
+function mo_openid_show_apps( $section = 'all' ) {     if (isset($_POST['update_tour_status'])){ //phpcs:ignore
 		$nonce = isset( $_POST['mo_openid_tour_nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['mo_openid_tour_nonce'] ) ) : '';
 		if ( ! wp_verify_nonce( $nonce, 'mo-openid-tour-nonce' ) ) {
 			wp_die( '<strong>ERROR WPSL44</strong>: Please Go back and Refresh the page and try again!<br/>If you still face the same issue please contact your Administrator.' );
@@ -16,6 +16,7 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 }
 ?>
 	<table>
+		<?php if ( 'free' === $section || 'all' === $section ) : ?>
 		<tr id="mo_openid_free_avail_apps">
 			<td>
 				<?php
@@ -94,6 +95,8 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 				<br/>
 			</td>
 		</tr>
+		<?php endif; ?>
+		<?php if ( 'premium' === $section || 'all' === $section ) : ?>
 		<tr>
 			<td>
 				<?php
@@ -164,6 +167,7 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 				</div>
 			</td>
 		</tr>
+		<?php endif; ?>
 	</table>
 	<div id="mo_openid_notice_snackbar"><label id="mo_openid_notice_message"></label></div>
 
@@ -962,5 +966,43 @@ function mo_openid_show_apps() {     if (isset($_POST['update_tour_status'])){ /
 			window.onload=jQuery("#mo_openid_delay_registration").show();
 		});
 	</script>
+	<?php
+}
+
+function mo_openid_show_apps_with_promo() {
+	?>
+	<table style="width:100%; border-collapse:collapse;">
+		<tr>
+			<td style="vertical-align:top; padding:0;">
+				<?php mo_openid_show_apps( 'free' ); ?>
+			</td>
+			<td style="vertical-align:top; width:320px; padding:0;">
+				<?php
+				$promo_img_url = plugin_dir_url( dirname( __FILE__ ) ) . '../includes/images/mcp_server_promo.png';
+				$product_url   = 'https://wordpress.org/plugins/miniorange-secure-mcp-server/';
+				?>
+				<div style="padding: 33px 0 0 0px;">
+					<div style="border-radius:10px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,0.15);">
+						<a href="<?php echo esc_url( $product_url ); ?>" target="_blank" style="display:block;">
+							<img src="<?php echo esc_url( $promo_img_url ); ?>"
+								 alt="<?php echo esc_attr( mo_sl( 'miniOrange MCP Server - Make your website AI-ready' ) ); ?>"
+								 style="width:100%; height:auto; display:block;">
+						</a>
+						<div style="padding: 10px 10px 0;">
+							<a href="<?php echo esc_url( $product_url ); ?>" target="_blank"
+							   style="display:block; text-align:center; background:#f97316; color:#fff !important; font-size:13px; font-weight:700; padding:13px 16px; border-radius:7px; text-decoration:none !important; letter-spacing:0.01em; margin-bottom:10px;">
+								<?php echo esc_attr( mo_sl( 'Connect WordPress to AI' ) ); ?> &rarr;
+							</a>
+						</div>
+					</div>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" style="padding:0;">
+				<?php mo_openid_show_apps( 'premium' ); ?>
+			</td>
+		</tr>
+	</table>
 	<?php
 }

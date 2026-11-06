@@ -530,6 +530,7 @@ class CustomerOpenID {
 				mo_openid_success_message();
 			}
 		}
+		return array( 'body' => '' );
 	}
 
 }
